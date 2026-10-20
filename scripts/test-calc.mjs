@@ -251,3 +251,9 @@ test('QA: tiny sizes, comma amounts and zero denominators', () => {
 test('QA: zero eggs stay zero', () => {
   assert.equal(s('0 eggs', 1.27), '0 eggs');
 });
+
+test('QA: a line with an amount after a label is flagged as not scaled', () => {
+  assert.equal(c.scaleLine('Eggs: 3', 1.27).skipped, true);
+  assert.equal(c.scaleLine('salt to taste', 1.27).skipped, false);
+  assert.equal(c.scaleLine('2 cups flour', 1.27).skipped, undefined);
+});

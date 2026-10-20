@@ -94,6 +94,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
       <button type="button" id="example" class="mt-2 text-sm font-medium text-brand-ink underline underline-offset-4">Try an example</button>
       <h3 id="scaled-h" class="mt-4 hidden text-sm font-semibold uppercase tracking-wide text-muted">Scaled for your pan</h3>
       <ul id="scaled" class="mt-2 space-y-1 font-mono text-base"></ul>
+      <p id="skipped" class="mt-2 hidden rounded-lg border border-line bg-card p-3 text-sm font-medium" role="status"></p>
     </div>
   </div>
 
@@ -269,6 +270,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
       el('scale').textContent = '–';
       el('say-scale').textContent = '';
       el('scale-text').textContent = '';
+      el('skipped').classList.add('hidden');
       for (const id of ['area-a', 'area-b', 'vol-a', 'vol-b']) el(id).textContent = '';
       el('fill-warn').classList.add('hidden');
       lastText = '';
@@ -320,8 +322,10 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
     const ul = el('scaled');
     ul.innerHTML = '';
     const copyLines: string[] = [];
-    for (const l of scaleRecipe(state.recipe, r.scale) as { text: string; note: string }[]) {
+    const skipped: string[] = [];
+    for (const l of scaleRecipe(state.recipe, r.scale) as { text: string; note: string; skipped?: boolean }[]) {
       if (!l.text) continue;
+      if (l.skipped) skipped.push(l.text.trim());
       const li = document.createElement('li');
       li.textContent = l.text;
       copyLines.push(l.text.trim());
@@ -335,6 +339,9 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
       ul.appendChild(li);
     }
     el('scaled-h').classList.toggle('hidden', copyLines.length === 0);
+    const skipNote = skipped.length ? `Not scaled: lines without a leading amount. Check by hand: ${skipped.join(' | ')}` : '';
+    el('skipped').textContent = skipNote;
+    el('skipped').classList.toggle('hidden', !skipNote);
 
     lastText = [
       `Cake pan conversion: ${panName(state.A, state.unit)} to ${panName(state.B, state.unit)}`,
@@ -344,6 +351,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
       head.textContent || '',
       ...g.lines,
       ...(copyLines.length ? ['', 'Scaled ingredients:', ...copyLines] : []),
+      ...(skipNote ? [skipNote] : []),
       '', link(),
     ].join('\n');
     syncUrl();

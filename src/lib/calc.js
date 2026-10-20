@@ -383,7 +383,7 @@ export function scaleLine(line, s) {
   if (!m) {
     // No quantity at the start. Scale amounts found later in the text, but ask for a check.
     const out = scaleInner(body, s);
-    return out === body ? { text: line, note: '' } : { text: prefix + out, note: 'Check this line. It did not start with an amount, so only the amounts inside it were scaled.' };
+    return out === body ? { text: line, note: '', skipped: /[\d½¼¾⅓⅔⅛⅜⅝⅞]/.test(body) } : { text: prefix + out, note: 'Check this line. It did not start with an amount, so only the amounts inside it were scaled.' };
   }
   const [, lead, n1, n2, sp, unit, restRaw] = m;
   let rest = restRaw;
