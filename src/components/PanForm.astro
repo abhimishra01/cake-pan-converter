@@ -1,0 +1,37 @@
+---
+import { SHAPES } from '../lib/calc.js';
+const { id, title, hint } = Astro.props;
+const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30';
+const lab = 'text-xs font-semibold uppercase tracking-wide text-muted';
+---
+<fieldset class="rounded-xl border border-line bg-paper/60 p-3 sm:p-4" data-pan={id}>
+  <legend class="px-1 text-sm font-bold">{title} <span class="font-normal text-muted">{hint}</span></legend>
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label class={lab} for={`${id}-shape`}>Shape</label>
+      <select id={`${id}-shape`} class={field}>
+        {Object.entries(SHAPES).map(([k, v]) => <option value={k}>{v.label}</option>)}
+      </select>
+    </div>
+    <div>
+      <label class={lab} for={`${id}-preset`}>Common size</label>
+      <select id={`${id}-preset`} class={field}></select>
+    </div>
+    <div>
+      <label class={lab} for={`${id}-a`} id={`${id}-a-l`}>Diameter</label>
+      <input id={`${id}-a`} type="text" inputmode="decimal" autocomplete="off" class={`${field} font-mono tabular-nums`} />
+    </div>
+    <div id={`${id}-b-wrap`}>
+      <label class={lab} for={`${id}-b`} id={`${id}-b-l`}>Length</label>
+      <input id={`${id}-b`} type="text" inputmode="decimal" autocomplete="off" class={`${field} font-mono tabular-nums`} />
+    </div>
+    <div id={`${id}-d-wrap`}>
+      <label class={lab} for={`${id}-d`}>Depth <span class="normal-case font-normal" data-unit>(in)</span></label>
+      <input id={`${id}-d`} type="text" inputmode="decimal" autocomplete="off" class={`${field} font-mono tabular-nums`} />
+    </div>
+    <div>
+      <label class={lab} for={`${id}-n`}>Number of pans</label>
+      <input id={`${id}-n`} type="text" inputmode="numeric" autocomplete="off" class={`${field} font-mono tabular-nums`} />
+    </div>
+  </div>
+</fieldset>
