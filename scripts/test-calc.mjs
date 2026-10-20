@@ -184,3 +184,55 @@ test('url decoder rejects bad shapes and bad numbers', () => {
   assert.equal(d.count, 24);
   assert.equal(d.depth, 2);
 });
+
+test('say-out-loud sentence', () => {
+  assert.equal(c.sayScale(1.2656), 'Make 1 1/4 times the recipe. Each ingredient times 1.27.');
+  assert.equal(c.sayScale(0.79), 'Make about 3/4 of the recipe. Each ingredient times 0.79.');
+  assert.equal(c.sayScale(2), 'Make 2 times the recipe. Each ingredient times 2.00.');
+  assert.match(c.sayScale(0.994), /^Use the recipe as it is/);
+});
+
+test('fill warning only for a sheet pan filled past two thirds of its rim', () => {
+  const sheet = { shape: 'sheet', a: 13, b: 18, depth: 2, count: 1 };
+  assert.match(c.fillWarning(sheet), /to the rim/);
+  assert.equal(c.fillWarning({ ...sheet, depth: 1 }), null);
+  assert.equal(c.fillWarning(R(9)), null);
+});
+
+test('which pans work: sorted by closeness, pairs tried, 10% rule', () => {
+  const out = c.matchPans(R(9), ['r8', 's8', 'r10', 'x13']);
+  assert.equal(out[0].id, 's8'); // 64 vs 63.6 sq in
+  near(out[0].scale, 64 / 63.617, 0.001);
+  assert.ok(out[0].near);
+  assert.ok(out.find((m) => m.id === 'r8' && m.count === 1 && !m.near)); // 0.79
+  assert.ok(out.find((m) => m.id === 'r8' && m.count === 2)); // two 8 inch rounds: 1.58
+  assert.equal(c.matchPans(R(9), []).length, 0);
+});
+
+test('quarter rounding mode', () => {
+  c.setRounding('quarter');
+  try {
+    assert.equal(s('1 1/2 cups flour', 1.27), '2 cups flour'); // 1.905 -> 2
+    assert.equal(s('1 cup sugar', 1.27), '1 1/4 cups sugar');
+    assert.match(c.toQuery({ A: R(8), B: R(9), unit: 'in', tempUnit: 'F', temp: 0, minutes: 0, recipe: '' }), /f=4/);
+  } finally { c.setRounding('fine'); }
+  assert.equal(s('1 1/2 cups flour', 1.27), '1 7/8 cups flour');
+});
+
+test('ready-made pages: text matches the calculator', async () => {
+  const { pairs } = await import('../src/data/pairs.ts');
+  assert.equal(pairs.length, 10);
+  for (const p of pairs) {
+    const A = { ...p.A, count: p.countA ?? 1 }, B = { ...p.B, count: p.countB ?? 1 };
+    assert.equal(c.panProblem(A), '');
+    assert.equal(c.panProblem(B), '');
+    const x = c.convert(A, B).scale.toFixed(2);
+    assert.ok((p.intro + p.description + p.faq.map((f) => f.a).join(' ')).includes(x), `${p.slug} should state ${x}`);
+    assert.ok(p.title.length <= 52 && p.description.length <= 170, p.slug);
+    assert.ok(p.notes.length >= 3 && p.faq.length === 2);
+    for (const r of p.related) assert.ok(pairs.some((q) => q.slug === r), `${p.slug} links to missing ${r}`);
+    // the preset round-trips through the tool's URL decoder
+    const q = new URLSearchParams(c.presetQuery(A, B));
+    near(c.convert(c.dec(q.get('a')), c.dec(q.get('b'))).scale, c.convert(A, B).scale, 0.0001);
+  }
+});

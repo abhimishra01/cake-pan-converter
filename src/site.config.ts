@@ -5,9 +5,9 @@ export default {
   domain: 'cakepanconverter.com',
   cloudflareProject: 'cake-pan-converter',
   keyword: 'cake pan converter',
-  keywords: ['cake pan conversion chart', 'cake pan size calculator', 'convert recipe to different size pan', '9x13 to round pan', 'cake pan substitutions', 'baking pan converter'],
+  keywords: ['cake pan size converter', 'cake pan conversion chart', 'cake pan size calculator', 'convert recipe to different size pan', '9x13 to round pan', 'cake pan substitutions', 'baking pan converter'],
   tagline: 'Free recipe scaler',
-  homeTitle: 'Cake Pan Converter: Scale Any Recipe to a New Pan',
+  homeTitle: 'Cake Pan Size Converter: Scale Any Recipe to a New Pan',
   description:
     '8 inch to 9 inch round is 1.27x. Convert any cake pan: round, square, 9x13, loaf, bundt. Get scaled ingredients and a bake time guide.',
   email: 'hello@cakepanconverter.com',

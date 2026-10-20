@@ -76,3 +76,20 @@ GitHub Pages
 18. 9x13 to half sheet pan
 19. 9x13 to 12 cupcakes (muffin tin)
 20. 6 inch round to 8 inch round
+
+## Gap fix (2026-10-20, Wanda)
+Done
+- Gap 1: 10 pre-rendered pair pages (own URL, title, H1, preset tool, factor in the first paragraph, worked ingredient table from the real scaler, bake guide, 2 FAQs, FAQ and breadcrumb schema, related links), linked from the home page. Test checks each page's stated factor against the calculator.
+- Gap 2: title and H1 now "Cake pan size converter".
+- Gap 3: "Which of my pans will work?" (tick pans, within 10% best first, closest shown if none, "Use this pan" button; ticks kept in localStorage).
+- Gap 4 (sheet pans only): fill warning when batter passes two thirds of a 1 inch rim.
+- Gap 5: "Make 1 1/4 times the recipe. Each ingredient times 1.27." in the result and copy text.
+- Gap 6: bake rule of thumb beside the bake time field.
+- Gap 7: /cake-pan-conversion-chart/ (12 swaps and pan sizes, computed, print view), footer link.
+- Gap 8: About explains the formulas and checks (no named author).
+- Gap 9: last pair saved in localStorage (try/catch). Link or page preset wins.
+- Gap 10: Eighths / Quarters rounding switch (link keeps it).
+Skipped
+- General overflow warning for round, square, loaf pans: scaling by volume keeps the fill fraction constant, so a warning would be false. Only sheet pans have a rim that differs from the fill depth.
+- Named author on About: no real person to name.
+Checks: npm test 25 pass, build 17 pages, Lighthouse 99 to 100 on all four categories (home perf 99).

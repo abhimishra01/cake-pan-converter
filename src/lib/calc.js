@@ -122,6 +122,62 @@ export function convert(A, B) {
   };
 }
 
+// One sentence a person can say out loud, with the factor as a kitchen fraction.
+export function sayScale(scale) {
+  const frac = niceFraction(scale, FRACTIONS_CUP);
+  const exact = Math.abs(eval_(frac) - scale) < 0.02;
+  if (frac === '1') return `Use the recipe as it is. Each ingredient times ${scale.toFixed(2)}.`;
+  const lead = exact ? 'Make' : 'Make about';
+  const body = scale >= 1 ? `${lead} ${frac} times the recipe.` : `${lead} ${frac} of the recipe.`;
+  return `${body} Each ingredient times ${scale.toFixed(2)}.`;
+}
+function eval_(t) {
+  return t.split(' ').reduce((sum, part) => sum + (part.includes('/') ? part.split('/')[0] / part.split('/')[1] : Number(part)), 0);
+}
+
+// Sheet pans have a 1 inch rim, but the tool fills them to 2 inches like a cake pan. A cake batter fills about half the
+// pan depth. Returns { full, text } when the scaled batter would pass two thirds of the rim, or null.
+export const SHEET_RIM = 1;
+export function fillWarning(B) {
+  if (B.shape !== 'sheet') return null;
+  const fill = (0.5 * B.depth) / SHEET_RIM;
+  if (fill <= 2 / 3) return null;
+  const how = fill >= 1 ? 'to the rim' : `about ${niceFraction(fill, [[0, ''], [1 / 2, '1/2'], [2 / 3, '2/3'], [3 / 4, '3/4'], [1, '']])} full`;
+  return `Batter will fill this pan ${how}. Aim for 2/3 or less: set the depth to 1 inch, or bake the extra batter as cupcakes.`;
+}
+
+// Pans a home baker might own. A pan within 10% of the recipe pan's volume is a good swap.
+export const OWNABLE = [
+  { id: 'r6', label: '6" round', pan: { shape: 'round', a: 6, b: 0, depth: 2 } },
+  { id: 'r8', label: '8" round', pan: { shape: 'round', a: 8, b: 0, depth: 2 } },
+  { id: 'r9', label: '9" round', pan: { shape: 'round', a: 9, b: 0, depth: 2 } },
+  { id: 'r10', label: '10" round', pan: { shape: 'round', a: 10, b: 0, depth: 2 } },
+  { id: 's8', label: '8" square', pan: { shape: 'square', a: 8, b: 0, depth: 2 } },
+  { id: 's9', label: '9" square', pan: { shape: 'square', a: 9, b: 0, depth: 2 } },
+  { id: 'x13', label: '9 x 13" pan', pan: { shape: 'rect', a: 9, b: 13, depth: 2 } },
+  { id: 'l9', label: '9 x 5" loaf', pan: { shape: 'loaf', a: 9, b: 5, depth: 2.75 } },
+  { id: 'l8', label: '8 x 4" loaf', pan: { shape: 'loaf', a: 8, b: 4, depth: 2.75 } },
+  { id: 'b12', label: '12 cup bundt', pan: { shape: 'bundt', a: 12, b: 0, depth: 3 } },
+  { id: 'b10', label: '10 cup bundt', pan: { shape: 'bundt', a: 10, b: 0, depth: 3 } },
+];
+
+// Which of the owned pans (ids from OWNABLE) can stand in for pan A? Returns candidates sorted by closeness, with the
+// factor for each. Round and square pans are also tried as a pair. `near` is true when within `tol` of A's volume.
+export function matchPans(A, ownedIds, tol = 0.1) {
+  const out = [];
+  const vA = panVolume(A) * A.count;
+  for (const o of OWNABLE) {
+    if (!ownedIds.includes(o.id)) continue;
+    const counts = o.pan.shape === 'round' || o.pan.shape === 'square' ? [1, 2] : [1];
+    for (const count of counts) {
+      const pan = { ...o.pan, count };
+      const scale = (panVolume(pan) * count) / vA;
+      out.push({ id: o.id, count, pan, label: count > 1 ? `two ${o.label} pans` : o.label, scale, near: Math.abs(scale - 1) <= tol });
+    }
+  }
+  return out.sort((x, y) => Math.abs(x.scale - 1) - Math.abs(y.scale - 1));
+}
+
 export const areaText = (sqIn, unit) => (unit === 'cm' ? `${fmtNum(sqIn * SQIN_TO_SQCM, 1)} cm²` : `${fmtNum(sqIn, 1)} sq in`);
 export const volumeText = (cuIn, unit) => (unit === 'cm' ? `${fmtNum((cuIn * CUIN_TO_ML) / 1000, 2)} L` : `${fmtNum(cuIn / CUP_CU_IN, 1)} cups`);
 
@@ -188,8 +244,16 @@ export function bakeGuide(res, A, B, minutes, temp, tempUnit = 'F') {
 const UNICODE_FRACTIONS = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875 };
 const FRACTIONS_CUP = [[0, ''], [1 / 8, '1/8'], [1 / 4, '1/4'], [1 / 3, '1/3'], [3 / 8, '3/8'], [1 / 2, '1/2'], [5 / 8, '5/8'], [2 / 3, '2/3'], [3 / 4, '3/4'], [7 / 8, '7/8'], [1, '']];
 const FRACTIONS_SPOON = [[0, ''], [1 / 8, '1/8'], [1 / 4, '1/4'], [1 / 3, '1/3'], [1 / 2, '1/2'], [2 / 3, '2/3'], [3 / 4, '3/4'], [1, '']];
+const FRACTIONS_QUARTER = [[0, ''], [1 / 4, '1/4'], [1 / 2, '1/2'], [3 / 4, '3/4'], [1, '']];
 
-export function niceFraction(v, table = FRACTIONS_CUP) {
+// Rounding mode for printed amounts: 'fine' (eighths and thirds) or 'quarter' (quarters only).
+let rounding = 'fine';
+export function setRounding(mode) { rounding = mode === 'quarter' ? 'quarter' : 'fine'; }
+export const getRounding = () => rounding;
+const cupTable = () => (rounding === 'quarter' ? FRACTIONS_QUARTER : FRACTIONS_CUP);
+const spoonTable = () => (rounding === 'quarter' ? FRACTIONS_QUARTER : FRACTIONS_SPOON);
+
+export function niceFraction(v, table = cupTable()) {
   let whole = Math.floor(v + 1e-9);
   const frac = v - whole;
   let best = table[0];
@@ -256,15 +320,15 @@ const isPlural = (t) => t !== '1' && !/^\d+\/\d+$/.test(t);
 function render(v, kind) {
   switch (kind) {
     case 'cup': { const t = niceFraction(v); return `${t} ${isPlural(t) ? 'cups' : 'cup'}`; }
-    case 'tbsp': return `${niceFraction(v, FRACTIONS_SPOON)} tbsp`;
-    case 'tsp': return v <= 1 / 16 + 1e-9 ? 'a pinch' : `${niceFraction(v, FRACTIONS_SPOON)} tsp`;
+    case 'tbsp': return `${niceFraction(v, spoonTable())} tbsp`;
+    case 'tsp': return v <= 1 / 16 + 1e-9 ? 'a pinch' : `${niceFraction(v, spoonTable())} tsp`;
     case 'g': return `${v >= 10 ? Math.round(v) : fmtNum(v, 1)} g`;
     case 'ml': return `${v >= 10 ? Math.round(v) : fmtNum(v, 1)} ml`;
     case 'kg': return `${fmtNum(v, 2)} kg`;
     case 'l': return `${fmtNum(v, 2)} l`;
     case 'oz': return `${fmtNum(v, 1)} oz`;
     case 'lb': return `${niceFraction(v)} lb`;
-    case 'stick': { const t = niceFraction(v, FRACTIONS_SPOON); return `${t} ${isPlural(t) ? 'sticks' : 'stick'}`; }
+    case 'stick': { const t = niceFraction(v, spoonTable()); return `${t} ${isPlural(t) ? 'sticks' : 'stick'}`; }
     case 'pinch': return v > 1.5 ? `${Math.round(v)} pinches` : 'a pinch';
     default: return niceFraction(v);
   }
@@ -371,6 +435,8 @@ export function dec(str, unit = 'in') {
     count: Math.round(clamp(count, 1, LIMITS.count, 1)),
   };
 }
+// Query string for a fixed pair of pans in inches. Used by the ready-made pages.
+export const presetQuery = (A, B) => toQuery({ A: { count: 1, ...A }, B: { count: 1, ...B }, unit: 'in' });
 export const RECIPE_URL_LIMIT = 1500;
 export function toQuery(state) {
   const q = new URLSearchParams();
@@ -378,6 +444,7 @@ export function toQuery(state) {
   q.set('b', enc(state.B, state.unit));
   if (state.unit === 'cm') q.set('u', 'cm');
   if (state.tempUnit === 'C') q.set('tu', 'c');
+  if (rounding === 'quarter') q.set('f', '4');
   if (state.temp) q.set('t', String(state.temp));
   if (state.minutes) q.set('m', String(state.minutes));
   if (state.recipe) q.set('r', state.recipe.slice(0, RECIPE_URL_LIMIT));

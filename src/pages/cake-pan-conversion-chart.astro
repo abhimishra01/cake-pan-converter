@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import site from '../site.config.ts';
+import { url } from '../lib/paths.ts';
+import { pairs } from '../data/pairs.ts';
+import { chart, sizes } from '../data/chart.ts';
+import { convert, panName, panArea, panVolume, areaText, volumeText, niceFraction } from '../lib/calc.js';
+
+const rows = chart.map(({ A, B }) => {
+  const r = convert(A, B);
+  return { a: panName(A), b: panName(B), x: r.scale.toFixed(2), frac: niceFraction(r.scale), href: pairs.find((p) => panName({ ...p.A, count: p.countA ?? 1 }) === panName(A) && panName({ ...p.B, count: p.countB ?? 1 }) === panName(B))?.slug };
+});
+const sizeRows = sizes.map(({ A }) => ({ n: panName(A), area: A.shape === 'bundt' ? 'n/a' : areaText(panArea(A), 'in'), vol: volumeText(panVolume(A), 'in') }));
+---
+<Base title="Cake Pan Conversion Chart (Printable)" description="A printable chart of the 12 most common cake pan conversions, with the multiplier for each and the area of common pans. Print it and tape it inside a cupboard.">
+  <div class="mx-auto max-w-5xl px-4 pt-12 sm:pt-16">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Cake pan conversion chart</h1>
+    <p class="mt-4 max-w-2xl text-base text-muted sm:text-lg">Multiply every ingredient by the number in the last column. Both pans are filled to the same depth. The first table is the 12 swaps bakers ask about most.</p>
+    <p class="no-print mt-4 flex flex-wrap gap-3">
+      <button type="button" id="print-chart" class="inline-flex h-12 items-center justify-center rounded-xl bg-brand px-5 text-base font-bold text-white hover:opacity-90">Print this chart</button>
+      <a href={url('/')} class="inline-flex h-12 items-center justify-center rounded-xl border border-edge px-5 text-base font-semibold">Convert your own pans</a>
+    </p>
+    <div class="prose-site mt-8">
+      <h2 style="margin-top:0">Conversions</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Recipe pan</th><th scope="col">Your pan</th><th scope="col">Multiply by</th><th scope="col">About</th></tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr><td>{r.href ? <a href={url(`/${r.href}/`)}>{r.a}</a> : r.a}</td><td>{r.b}</td><td class="num">{r.x}</td><td>{r.frac}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <h2>Pan sizes</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Pan</th><th scope="col">Area</th><th scope="col">Capacity</th></tr></thead>
+          <tbody>{sizeRows.map((r) => <tr><td>{r.n}</td><td class="num">{r.area}</td><td class="num">{r.vol}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <p>Capacity assumes the pan is filled 2 inches deep (loaf pans 2 3/4 inches). Bundt pans use the capacity printed on the pan. Fill any pan no more than two thirds full.</p>
+      <p class="no-print">Source: {site.name}, {site.domain}. Numbers come from area times depth, then the new volume divided by the old one.</p>
+    </div>
+  </div>
+</Base>
+<script>
+  document.getElementById('print-chart')?.addEventListener('click', () => window.print());
+</script>

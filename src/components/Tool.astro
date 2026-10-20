@@ -1,9 +1,11 @@
 ---
 import PanForm from './PanForm.astro';
+import { OWNABLE } from '../lib/calc.js';
+const { preset = '' } = Astro.props;
 const btn = 'inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-edge bg-card px-4 text-base font-semibold hover:border-brand focus-visible:border-brand';
 const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30';
 ---
-<section id="tool" aria-label="Cake pan converter" class="rounded-2xl border border-line bg-card p-4 sm:shadow-[6px_6px_0_0_var(--line)] sm:p-6">
+<section id="tool" data-preset={preset} aria-label="Cake pan converter" class="rounded-2xl border border-line bg-card p-4 sm:shadow-[6px_6px_0_0_var(--line)] sm:p-6">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div role="group" aria-label="Units" class="inline-flex rounded-xl border border-line p-1">
       <button type="button" data-unit-btn="in" aria-pressed="true" class="h-11 rounded-lg px-4 text-sm font-semibold aria-pressed:bg-brand aria-pressed:text-white">Inches</button>
@@ -23,7 +25,9 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
     <div id="result" class="result-tile scroll-mt-20 rounded-2xl border border-line bg-brand-soft p-4 md:col-span-2 lg:col-span-1">
       <p class="text-sm font-semibold uppercase tracking-wide text-muted">Multiply the recipe by</p>
       <p id="scale" class="font-mono text-6xl font-extrabold leading-none tabular-nums text-brand-ink sm:text-7xl">1.00&times;</p>
-      <p id="scale-text" class="mt-3 text-lg" aria-live="polite"></p>
+      <p id="say-scale" class="mt-3 text-lg font-semibold" aria-live="polite"></p>
+      <p id="scale-text" class="mt-1 text-base" aria-live="polite"></p>
+      <p id="fill-warn" class="mt-2 hidden rounded-lg border border-line bg-card p-3 text-sm font-medium" role="status"></p>
       <p id="depth-note" class="mt-2 hidden text-sm text-muted"></p>
       <figure class="m-0 mt-4">
         <svg id="draw" viewBox="0 0 440 210" class="h-auto w-full rounded-xl bg-card" role="img" aria-label="The two pans drawn to the same scale"></svg>
@@ -38,6 +42,20 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
       </table>
     </div>
   </div>
+
+  <details id="owned-box" class="mt-6 rounded-xl border border-line bg-paper/60 p-4">
+    <summary class="cursor-pointer text-lg font-bold">Which of my pans will work?</summary>
+    <p class="mt-2 text-sm text-muted">Tick the pans you own. We list the ones within about 10% of the recipe pan's volume, best first. Your ticks stay in this browser only.</p>
+    <fieldset class="mt-3">
+      <legend class="sr-only">Pans I own</legend>
+      <div class="grid grid-cols-2 gap-x-4 sm:grid-cols-3">
+        {OWNABLE.map((o) => (
+          <label class="flex min-h-11 items-center gap-2 text-base"><input type="checkbox" data-own={o.id} class="h-5 w-5 accent-[var(--brand)]" /> {o.label}</label>
+        ))}
+      </div>
+    </fieldset>
+    <ul id="owned-list" class="mt-3 space-y-2" aria-live="polite"></ul>
+  </details>
 
   <div class="mt-6 grid gap-6 md:grid-cols-2">
     <div>
@@ -58,10 +76,18 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
           <input id="temp" type="text" inputmode="numeric" placeholder="350" autocomplete="off" class={`${field} font-mono tabular-nums`} />
         </div>
       </div>
+      <p class="mt-3 text-sm text-muted">Rule of thumb: deeper batter, lower the oven 25&deg;F (15&deg;C) and add 5 to 15 minutes. Thinner batter, same oven, check early.</p>
       <div id="bake" class="mt-3 space-y-2 text-base"></div>
     </div>
     <div>
       <h2 class="text-lg font-bold">Scale your ingredients</h2>
+      <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+        <span class="text-muted" id="round-l">Round amounts to</span>
+        <div role="group" aria-labelledby="round-l" class="inline-flex rounded-lg border border-line p-0.5">
+          <button type="button" data-round-btn="fine" aria-pressed="true" class="h-9 rounded-md px-3 text-sm font-semibold aria-pressed:bg-brand aria-pressed:text-white">Eighths</button>
+          <button type="button" data-round-btn="quarter" aria-pressed="false" class="h-9 rounded-md px-3 text-sm font-semibold aria-pressed:bg-brand aria-pressed:text-white">Quarters</button>
+        </div>
+      </div>
       <label class="mt-2 block text-xs font-semibold uppercase tracking-wide text-muted" for="recipe">Paste the ingredient list, one per line</label>
       <textarea id="recipe" rows="7" placeholder={'1 1/2 cups flour\n3/4 cup sugar\n2 large eggs\n1 tsp baking powder'}
         class="mt-1 block max-h-[28rem] min-h-40 w-full resize-y [field-sizing:content] rounded-xl border border-edge bg-paper p-3 font-mono text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"></textarea>
@@ -94,6 +120,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
   import {
     SHAPES, PRESETS, IN_TO_CM, RECIPE_URL_LIMIT, LIMITS, defaultPan, panName, panProblem, convert, bakeGuide,
     scaleRecipe, fmtNum, dec, toQuery, bundtRadius, parseSize, describeScale, areaText, volumeText,
+    sayScale, fillWarning, matchPans, setRounding,
   } from '../lib/calc.js';
 
   type Pan = { shape: string; a: number; b: number; depth: number; count: number };
@@ -232,6 +259,8 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
       msg.classList.remove('hidden');
       result.style.opacity = '0.35';
       el('scale').textContent = '–';
+      el('say-scale').textContent = '';
+      el('fill-warn').classList.add('hidden');
       lastText = '';
       syncUrl();
       return;
@@ -244,7 +273,12 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
     el('scale').textContent = scaleTxt;
     el('bar-scale').textContent = scaleTxt;
     const scaleText = describeScale(r, state.A, state.B, state.unit);
+    const say = sayScale(r.scale);
+    const warn = fillWarning(state.B) || '';
+    el('say-scale').textContent = say;
     el('scale-text').textContent = scaleText;
+    el('fill-warn').textContent = warn;
+    el('fill-warn').classList.toggle('hidden', !warn);
     const note = el('depth-note');
     const flat = state.A.shape !== 'bundt' && state.B.shape !== 'bundt';
     const depthDiffers = flat && Math.abs(state.A.depth / state.B.depth - 1) > 0.15;
@@ -257,6 +291,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
     el('vol-b').textContent = volumeText(r.volB, state.unit);
 
     drawing();
+    renderOwnedList();
 
     const g = bakeGuide(r, state.A, state.B, state.minutes, state.temp, state.tempUnit);
     const bake = el('bake');
@@ -292,7 +327,8 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
 
     lastText = [
       `Cake pan conversion: ${panName(state.A, state.unit)} to ${panName(state.B, state.unit)}`,
-      `Multiply the recipe by ${r.scale.toFixed(2)}x. ${scaleText}`,
+      `Multiply the recipe by ${r.scale.toFixed(2)}x. ${say} ${scaleText}`,
+      ...(warn ? [warn] : []),
       `Area: ${el('area-a').textContent} to ${el('area-b').textContent}. Capacity: ${el('vol-a').textContent} to ${el('vol-b').textContent}.`,
       head.textContent || '',
       ...g.lines,
@@ -304,6 +340,53 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
 
   function syncUrl() {
     try { history.replaceState(null, '', `${location.pathname}#${toQuery(state)}`); } catch { /* ignore */ }
+    // Remember the last pair for a repeat visit. Only the pans, never the recipe.
+    if (valid) try { localStorage.setItem('pans', toQuery({ ...state, recipe: '', minutes: 0, temp: 0 })); } catch { /* ignore */ }
+  }
+
+  // "Which of my pans will work?"
+  let owned: string[] = [];
+  try { owned = JSON.parse(localStorage.getItem('owned') || '[]').filter((x: unknown) => typeof x === 'string'); } catch { owned = []; }
+  function renderOwnedList() {
+    const ul = el('owned-list');
+    ul.innerHTML = '';
+    if (!valid || !owned.length) return;
+    const all = matchPans(state.A, owned);
+    const near = all.filter((m: any) => m.near);
+    const shownList = near.length ? near : all.slice(0, 1);
+    if (!near.length) {
+      const li = document.createElement('li');
+      li.className = 'text-sm text-muted';
+      li.textContent = 'None of your pans is within 10% of the recipe pan. The closest one is:';
+      ul.appendChild(li);
+    }
+    for (const m of shownList as any[]) {
+      const li = document.createElement('li');
+      li.className = 'flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-card px-3 py-2';
+      const t = document.createElement('span');
+      t.textContent = `${m.label}: multiply by ${m.scale.toFixed(2)}`;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'h-11 rounded-lg border border-edge px-3 text-sm font-semibold hover:border-brand';
+      b.textContent = 'Use this pan';
+      b.addEventListener('click', () => { state.B = { shape: m.pan.shape, a: m.pan.a, b: m.pan.b, depth: m.pan.depth, count: m.count }; renderPan('b'); update(); });
+      li.appendChild(t); li.appendChild(b);
+      ul.appendChild(li);
+    }
+  }
+  document.querySelectorAll<HTMLInputElement>('[data-own]').forEach((box) => {
+    box.checked = owned.includes(box.dataset.own!);
+    box.addEventListener('change', () => {
+      owned = [...document.querySelectorAll<HTMLInputElement>('[data-own]')].filter((c) => c.checked).map((c) => c.dataset.own!);
+      try { localStorage.setItem('owned', JSON.stringify(owned)); } catch { /* ignore */ }
+      renderOwnedList();
+    });
+  });
+  if (owned.length) (el('owned-box') as HTMLDetailsElement).open = true;
+
+  function setRoundBtn(mode: 'fine' | 'quarter') {
+    setRounding(mode);
+    document.querySelectorAll<HTMLElement>('[data-round-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.roundBtn === mode)));
   }
 
   function flash(text: string) {
@@ -353,8 +436,8 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
   }
 
   // Load pans and settings from the address after the # sign.
-  function loadHash(): boolean {
-    const q = new URLSearchParams(location.hash.slice(1));
+  function loadFrom(qs: string): boolean {
+    const q = new URLSearchParams(qs);
     const unit = q.get('u') === 'cm' ? 'cm' : 'in';
     const a = dec(q.get('a'), unit), b = dec(q.get('b'), unit);
     if (!a || !b) return false;
@@ -363,9 +446,12 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
     el<HTMLInputElement>('temp').value = q.get('t') || '';
     el<HTMLTextAreaElement>('recipe').value = q.get('r') || '';
     setTempUnit(q.get('tu') === 'c' ? 'C' : 'F');
+    setRoundBtn(q.get('f') === '4' ? 'quarter' : 'fine');
     setUnit(unit);
     return true;
   }
+  const loadHash = () => loadFrom(location.hash.slice(1));
+  const loadSaved = () => { try { return loadFrom(localStorage.getItem('pans') || ''); } catch { return false; } };
 
   // Show the "Multiply by" bar on a phone while the answer is off screen.
   const seen = { tool: false, result: false };
@@ -375,13 +461,14 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
   const watch = (id: string, name: 'tool' | 'result') => new IntersectionObserver((es) => { seen[name] = es[es.length - 1].isIntersecting; syncBar(); }).observe(el(id));
 
   // start
-  if (!loadHash()) { setTempUnit('F'); setUnit('in'); }
+  if (!loadHash() && !loadFrom(el('tool').dataset.preset || '') && !loadSaved()) { setTempUnit('F'); setUnit('in'); }
   wire('a'); wire('b');
   document.querySelectorAll<HTMLElement>('[data-unit-btn]').forEach((btn) => btn.addEventListener('click', () => { setUnit(btn.dataset.unitBtn as 'in' | 'cm'); update(); }));
   document.querySelectorAll<HTMLElement>('[data-temp-btn]').forEach((btn) => btn.addEventListener('click', () => { setTempUnit(btn.dataset.tempBtn as 'F' | 'C'); update(); }));
   for (const id of ['mins', 'temp', 'recipe']) el(id).addEventListener('input', update);
   el('example').addEventListener('click', () => { el<HTMLTextAreaElement>('recipe').value = EXAMPLE; update(); });
   el('swap').addEventListener('click', () => { [state.A, state.B] = [state.B, state.A]; renderPan('a'); renderPan('b'); update(); });
+  document.querySelectorAll<HTMLElement>('[data-round-btn]').forEach((btn) => btn.addEventListener('click', () => { setRoundBtn(btn.dataset.roundBtn as 'fine' | 'quarter'); update(); }));
   el('copy').addEventListener('click', copyResult);
   el('bar-copy').addEventListener('click', copyResult);
   el('bar-jump').addEventListener('click', () => el('result').scrollIntoView({ behavior: 'smooth', block: 'start' }));

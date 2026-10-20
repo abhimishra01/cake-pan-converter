@@ -6,6 +6,8 @@ import Article from '../components/Article.astro';
 import Faq from '../components/Faq.astro';
 import site from '../site.config.ts';
 import { faq } from '../data/faq.ts';
+import { pairs } from '../data/pairs.ts';
+import { url } from '../lib/paths.ts';
 
 const base = `https://${site.domain}`;
 const jsonLd = [
@@ -38,11 +40,18 @@ const jsonLd = [
   <section class="mx-auto max-w-5xl px-4 pt-5 sm:pt-16">
     <p class="mb-3 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand-ink">{site.tagline}</p>
     <h1 class="max-w-3xl text-3xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">
-      {site.keyword.charAt(0).toUpperCase() + site.keyword.slice(1)}
+      Cake pan size converter
     </h1>
     <p class="mt-4 max-w-2xl text-base text-muted sm:text-lg">Pick the pan in your recipe and the pan you have. Get the scale factor, scaled ingredients and a bake time guide.</p>
     <div class="mt-6 min-h-[22rem] sm:mt-8"><Tool /></div>
     <AdSlot />
+  </section>
+  <section aria-labelledby="popular-h" class="mx-auto max-w-5xl px-4 pt-16">
+    <h2 id="popular-h" class="text-2xl font-bold tracking-tight">Popular pan swaps</h2>
+    <ul class="mt-4 grid gap-x-8 gap-y-1 sm:grid-cols-2">
+      {pairs.map((p) => <li><a href={url(`/${p.slug}/`)} class="inline-block py-2 font-medium text-brand-ink underline underline-offset-4">{p.h1.charAt(0).toUpperCase() + p.h1.slice(1)}</a></li>)}
+      <li><a href={url('/cake-pan-conversion-chart/')} class="inline-block py-2 font-medium text-brand-ink underline underline-offset-4">Printable cake pan conversion chart</a></li>
+    </ul>
   </section>
   <Article />
   <Faq />

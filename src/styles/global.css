@@ -65,6 +65,9 @@ body { background: var(--paper); color: var(--ink); font-family: var(--font-sans
 .prose-site td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700; }
 
 @media print {
-  header, footer, #bar, #example, #copy, #copy-link, #print, #swap, [data-unit-btn], article, section[aria-labelledby="faq-h"] { display: none !important; }
+  header, footer, #bar, .no-print, #example, #copy, #copy-link, #print, #swap, [data-unit-btn], article, section[aria-labelledby="faq-h"] { display: none !important; }
   body { background: #fff; color: #000; }
+  .prose-site a { color: #000; text-decoration: none; }
+  .prose-site .table-wrap { break-inside: avoid; border-color: #999; }
+  .prose-site thead th { background: #eee; color: #000; }
 }

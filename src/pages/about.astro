@@ -9,6 +9,9 @@ import { url } from '../lib/paths.ts';
   <p>Recipes name one pan, and your cupboard may hold another. The tool gives an answer as you type, handles bundt and sheet pans, and scales the ingredients too.</p>
   <h2>How it works</h2>
   <p>The tool compares the volume of the two pans. It multiplies your ingredients by that ratio and rounds them to amounts you can measure, such as 1 1/2 cups or 2 tablespoons. The bake time and temperature guide is a starting point. Ovens differ, so always test the cake.</p>
+  <h2>How the numbers are checked</h2>
+  <p>A round pan has an area of pi times the radius squared. A square or rectangular pan has an area of side times side. Volume is the area times the depth, and bundt pans use the capacity in cups printed on the pan. The scale factor is the volume of your pan divided by the volume of the recipe pan.</p>
+  <p>We check the code against known answers. An 8 inch round to a 9 inch round is 1.27. A 9x13 pan covers 117 square inches. Two 8 inch rounds hold 86% of a 9x13. Automated tests run these checks every time the site changes.</p>
   <p>Everything runs in your browser. We do not ask you to create an account, and we do not store your recipe.</p>
   <h2>Contact</h2>
   <p>Questions or ideas? Write to <a href={`mailto:${site.email}`}>{site.email}</a> or visit the <a href={url('/contact/')}>Contact page</a>.</p>

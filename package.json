@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "test": "node --test scripts/test-calc.mjs",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test scripts/test-calc.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "npm test && npm run build && node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/deploy.mjs"

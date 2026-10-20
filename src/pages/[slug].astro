@@ -1,0 +1,90 @@
+---
+import Base from '../layouts/Base.astro';
+import Tool from '../components/Tool.astro';
+import site from '../site.config.ts';
+import { url } from '../lib/paths.ts';
+import { pairs, bySlug } from '../data/pairs.ts';
+import { convert, presetQuery, panName, areaText, volumeText, bakeGuide, scaleLine, sayScale, fillWarning, fmtNum } from '../lib/calc.js';
+
+export function getStaticPaths() {
+  return pairs.map((p) => ({ params: { slug: p.slug } }));
+}
+const page = bySlug(Astro.params.slug!);
+const A = { ...page.A, count: page.countA ?? 1 };
+const B = { ...page.B, count: page.countB ?? 1 };
+const r = convert(A, B);
+const preset = presetQuery(A, B);
+const nameA = panName(A), nameB = panName(B);
+
+// A small sample recipe, scaled by the same code the tool uses.
+const SAMPLE = ['2 cups all-purpose flour', '1 1/2 cups sugar', '1/2 cup (1 stick) butter', '3 large eggs', '3/4 cup milk', '2 tsp baking powder'];
+const rows = SAMPLE.map((l) => [l, scaleLine(l, r.scale).text]);
+const guide = bakeGuide(r, A, B, 35, 350, 'F');
+const warn = fillWarning(B);
+const areaOf = (v: number, p: { shape: string }) => (p.shape === 'bundt' ? 'n/a' : areaText(v, 'in'));
+
+const base = `https://${site.domain}`;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: page.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: site.name, item: `${base}/` },
+      { '@type': 'ListItem', position: 2, name: page.h1, item: `${base}/${page.slug}/` },
+    ],
+  },
+];
+---
+<Base title={page.title} description={page.description} jsonLd={jsonLd}>
+  <section class="mx-auto max-w-5xl px-4 pt-5 sm:pt-16">
+    <p class="mb-3 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand-ink">Multiply by {r.scale.toFixed(2)}</p>
+    <h1 class="max-w-3xl text-3xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">{page.h1.charAt(0).toUpperCase() + page.h1.slice(1)}</h1>
+    <p class="mt-4 max-w-2xl text-base sm:text-lg"><strong>{sayScale(r.scale)}</strong> {page.intro}</p>
+    <div class="mt-6 min-h-[22rem] sm:mt-8"><Tool preset={preset} /></div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-4 pt-16" aria-labelledby="pair-h">
+    <article class="prose-site">
+      <h2 id="pair-h" style="margin-top:0">{nameA} to {nameB}</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col"></th><th scope="col">Recipe pan</th><th scope="col">Your pan</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Pan</th><td>{nameA}</td><td>{nameB}</td></tr>
+            <tr><th scope="row">Area</th><td class="num">{areaOf(r.areaA, A)}</td><td class="num">{areaOf(r.areaB, B)}</td></tr>
+            <tr><th scope="row">Capacity</th><td class="num">{volumeText(r.volA, 'in')}</td><td class="num">{volumeText(r.volB, 'in')}</td></tr>
+            <tr><th scope="row">Multiply by</th><td></td><td class="num">{r.scale.toFixed(2)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>{page.notes.map((n) => <li>{n}</li>)}</ul>
+
+      <h2>Example: a plain butter cake</h2>
+      <p>This is a sample ingredient list scaled for this swap. Paste your own recipe in the tool above to scale it.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Recipe says</th><th scope="col">Use</th></tr></thead>
+          <tbody>{rows.map(([from, to]) => <tr><td>{from}</td><td class="num">{to}</td></tr>)}</tbody>
+        </table>
+      </div>
+
+      <h2>Bake time and temperature</h2>
+      <p>For a recipe that bakes 35 minutes at 350°F: {guide.range ? `start checking at ${guide.range[0]} minutes and expect it done by ${guide.range[1]}` : 'check at the recipe time'}{guide.temp ? `, at ${guide.temp}°F` : ''}.</p>
+      {guide.lines.slice(0, 2).map((l: string) => <p>{l}</p>)}
+      {warn && <p><strong>{warn}</strong></p>}
+
+      <h2>Questions about this swap</h2>
+      {page.faq.map((f) => <><h3>{f.q}</h3><p>{f.a}</p></>)}
+
+      <h2>Other pan swaps</h2>
+      <ul>
+        {page.related.map((s) => <li><a href={url(`/${s}/`)}>{bySlug(s).h1.charAt(0).toUpperCase() + bySlug(s).h1.slice(1)}</a></li>)}
+        <li><a href={url('/cake-pan-conversion-chart/')}>Printable cake pan conversion chart</a></li>
+        <li><a href={url('/')}>Convert any pan and any recipe</a></li>
+      </ul>
+    </article>
+  </section>
+</Base>
