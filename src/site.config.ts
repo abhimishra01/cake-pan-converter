@@ -14,6 +14,7 @@ export default {
   ga4: '',
   adsense: '',
   brand: '#a3264f',
+  skin: 'clay',
   locale: 'en-US',
   ogImage: '/og.png',
   legalUpdated: 'October 20, 2026', // change only when the Privacy or Terms text changes

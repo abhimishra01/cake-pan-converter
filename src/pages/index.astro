@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Tool from '../components/Tool.astro';
+import AdSlot from '../components/AdSlot.astro';
 import Article from '../components/Article.astro';
 import Faq from '../components/Faq.astro';
 import site from '../site.config.ts';
@@ -34,13 +35,14 @@ const jsonLd = [
 ];
 ---
 <Base jsonLd={jsonLd}>
-  <section class="mx-auto max-w-5xl px-4 pt-10 sm:pt-16">
+  <section class="mx-auto max-w-5xl px-4 pt-5 sm:pt-16">
     <p class="mb-3 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand-ink">{site.tagline}</p>
-    <h1 class="max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">
+    <h1 class="max-w-3xl text-3xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">
       {site.keyword.charAt(0).toUpperCase() + site.keyword.slice(1)}
     </h1>
-    <p class="mt-4 max-w-2xl text-lg text-muted">Pick the pan in your recipe and the pan you have. Get the scale factor, scaled ingredients and a bake time guide.</p>
-    <div class="mt-8 min-h-[22rem]"><Tool /></div>
+    <p class="mt-4 max-w-2xl text-base text-muted sm:text-lg">Pick the pan in your recipe and the pan you have. Get the scale factor, scaled ingredients and a bake time guide.</p>
+    <div class="mt-6 min-h-[22rem] sm:mt-8"><Tool /></div>
+    <AdSlot />
   </section>
   <Article />
   <Faq />

@@ -1,7 +1,7 @@
 ---
 import PanForm from './PanForm.astro';
-const btn = 'inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-line bg-card px-4 text-base font-semibold hover:border-brand focus-visible:border-brand';
-const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30';
+const btn = 'inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-edge bg-card px-4 text-base font-semibold hover:border-brand focus-visible:border-brand';
+const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30';
 ---
 <section id="tool" aria-label="Cake pan converter" class="rounded-2xl border border-line bg-card p-4 sm:shadow-[6px_6px_0_0_var(--line)] sm:p-6">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -14,19 +14,21 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
 
   <noscript><p class="rounded-xl border border-line bg-brand-soft p-4">This tool needs JavaScript. Turn it on in your browser to use the converter.</p></noscript>
 
-  <div class="grid gap-4 md:grid-cols-2">
+  <div id="msg" class="mb-4 hidden rounded-xl border border-line bg-brand-soft p-4 text-base" role="status"></div>
+
+  <div class="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_19rem]">
     <PanForm id="a" title="Pan in the recipe" hint="(what it says)" />
     <PanForm id="b" title="Pan you will use" hint="(what you have)" />
-  </div>
 
-  <div id="msg" class="mt-4 hidden rounded-xl border border-line bg-brand-soft p-4 text-base" role="status"></div>
-
-  <div id="result" class="mt-6 grid gap-6 scroll-mt-20 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-    <div>
+    <div id="result" class="result-tile scroll-mt-20 rounded-2xl border border-line bg-brand-soft p-4 md:col-span-2 lg:col-span-1">
       <p class="text-sm font-semibold uppercase tracking-wide text-muted">Multiply the recipe by</p>
       <p id="scale" class="font-mono text-6xl font-extrabold leading-none tabular-nums text-brand-ink sm:text-7xl">1.00&times;</p>
       <p id="scale-text" class="mt-3 text-lg" aria-live="polite"></p>
       <p id="depth-note" class="mt-2 hidden text-sm text-muted"></p>
+      <figure class="m-0 mt-4">
+        <svg id="draw" viewBox="0 0 440 210" class="h-auto w-full rounded-xl bg-card" role="img" aria-label="The two pans drawn to the same scale"></svg>
+        <figcaption id="draw-cap" class="mt-1 text-xs text-muted">Both pans are drawn to the same scale.</figcaption>
+      </figure>
       <table class="mt-4 w-full text-left text-sm">
         <thead class="text-xs uppercase tracking-wide text-muted"><tr><th class="pb-1 font-semibold"></th><th class="pb-1 font-semibold">Recipe pan</th><th class="pb-1 font-semibold">Your pan</th></tr></thead>
         <tbody class="font-mono tabular-nums">
@@ -35,10 +37,6 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
         </tbody>
       </table>
     </div>
-    <figure class="m-0">
-      <svg id="draw" viewBox="0 0 440 210" class="h-auto w-full rounded-xl bg-brand-soft" role="img" aria-label="The two pans drawn to the same scale"></svg>
-      <figcaption id="draw-cap" class="mt-1 text-xs text-muted">Both pans are drawn to the same scale.</figcaption>
-    </figure>
   </div>
 
   <div class="mt-6 grid gap-6 md:grid-cols-2">
@@ -66,7 +64,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
       <h2 class="text-lg font-bold">Scale your ingredients</h2>
       <label class="mt-2 block text-xs font-semibold uppercase tracking-wide text-muted" for="recipe">Paste the ingredient list, one per line</label>
       <textarea id="recipe" rows="7" placeholder={'1 1/2 cups flour\n3/4 cup sugar\n2 large eggs\n1 tsp baking powder'}
-        class="mt-1 block max-h-[28rem] min-h-40 w-full resize-y [field-sizing:content] rounded-xl border border-line bg-paper p-3 font-mono text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"></textarea>
+        class="mt-1 block max-h-[28rem] min-h-40 w-full resize-y [field-sizing:content] rounded-xl border border-edge bg-paper p-3 font-mono text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"></textarea>
       <button type="button" id="example" class="mt-2 text-sm font-medium text-brand-ink underline underline-offset-4">Try an example</button>
       <h3 id="scaled-h" class="mt-4 hidden text-sm font-semibold uppercase tracking-wide text-muted">Scaled for your pan</h3>
       <ul id="scaled" class="mt-2 space-y-1 font-mono text-base"></ul>
@@ -86,7 +84,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
   <div class="mx-auto flex max-w-5xl items-center justify-between gap-3">
     <p class="text-sm text-muted">Multiply by <span id="bar-scale" class="ml-1 font-mono text-2xl font-extrabold tabular-nums text-brand-ink"></span></p>
     <div class="flex gap-2">
-      <button type="button" id="bar-jump" class="inline-flex h-11 items-center rounded-xl border border-line px-3 text-sm font-semibold">See result</button>
+      <button type="button" id="bar-jump" class="inline-flex h-11 items-center rounded-xl border border-edge px-3 text-sm font-semibold">See result</button>
       <button type="button" id="bar-copy" class="inline-flex h-11 items-center rounded-xl bg-brand px-3 text-sm font-bold text-white">Copy</button>
     </div>
   </div>
