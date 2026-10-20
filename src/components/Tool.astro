@@ -1,16 +1,18 @@
 ---
 import PanForm from './PanForm.astro';
-const btn = 'inline-flex h-12 items-center justify-center rounded-xl border border-line bg-card px-4 text-base font-semibold hover:border-brand focus-visible:border-brand';
+const btn = 'inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-line bg-card px-4 text-base font-semibold hover:border-brand focus-visible:border-brand';
 const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30';
 ---
 <section id="tool" aria-label="Cake pan converter" class="rounded-2xl border border-line bg-card p-4 sm:shadow-[6px_6px_0_0_var(--line)] sm:p-6">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div role="group" aria-label="Units" class="inline-flex rounded-xl border border-line p-1">
-      <button type="button" data-unit-btn="in" aria-pressed="true" class="h-10 rounded-lg px-4 text-sm font-semibold aria-pressed:bg-brand aria-pressed:text-white">Inches</button>
-      <button type="button" data-unit-btn="cm" aria-pressed="false" class="h-10 rounded-lg px-4 text-sm font-semibold aria-pressed:bg-brand aria-pressed:text-white">Centimeters</button>
+      <button type="button" data-unit-btn="in" aria-pressed="true" class="h-11 rounded-lg px-4 text-sm font-semibold aria-pressed:bg-brand aria-pressed:text-white">Inches</button>
+      <button type="button" data-unit-btn="cm" aria-pressed="false" class="h-11 rounded-lg px-4 text-sm font-semibold aria-pressed:bg-brand aria-pressed:text-white">Centimeters</button>
     </div>
-    <button type="button" id="swap" class={btn} aria-label="Swap the two pans">Swap pans &#8646;</button>
+    <button type="button" id="swap" class={btn}>Swap pans <span aria-hidden="true">&#8646;</span></button>
   </div>
+
+  <noscript><p class="rounded-xl border border-line bg-brand-soft p-4">This tool needs JavaScript. Turn it on in your browser to use the converter.</p></noscript>
 
   <div class="grid gap-4 md:grid-cols-2">
     <PanForm id="a" title="Pan in the recipe" hint="(what it says)" />
@@ -19,16 +21,17 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
 
   <div id="msg" class="mt-4 hidden rounded-xl border border-line bg-brand-soft p-4 text-base" role="status"></div>
 
-  <div id="result" class="mt-6 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]" aria-live="polite">
+  <div id="result" class="mt-6 grid gap-6 scroll-mt-20 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
     <div>
       <p class="text-sm font-semibold uppercase tracking-wide text-muted">Multiply the recipe by</p>
       <p id="scale" class="font-mono text-6xl font-extrabold leading-none tabular-nums text-brand-ink sm:text-7xl">1.00&times;</p>
-      <p id="scale-text" class="mt-3 text-lg"></p>
+      <p id="scale-text" class="mt-3 text-lg" aria-live="polite"></p>
+      <p id="depth-note" class="mt-2 hidden text-sm text-muted"></p>
       <table class="mt-4 w-full text-left text-sm">
         <thead class="text-xs uppercase tracking-wide text-muted"><tr><th class="pb-1 font-semibold"></th><th class="pb-1 font-semibold">Recipe pan</th><th class="pb-1 font-semibold">Your pan</th></tr></thead>
         <tbody class="font-mono tabular-nums">
           <tr class="border-t border-line"><th class="py-2 pr-2 font-sans font-medium text-muted">Area</th><td id="area-a"></td><td id="area-b"></td></tr>
-          <tr class="border-t border-line"><th class="py-2 pr-2 font-sans font-medium text-muted">Volume</th><td id="vol-a"></td><td id="vol-b"></td></tr>
+          <tr class="border-t border-line"><th class="py-2 pr-2 font-sans font-medium text-muted">Pan capacity</th><td id="vol-a"></td><td id="vol-b"></td></tr>
         </tbody>
       </table>
     </div>
@@ -43,11 +46,17 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
       <h2 class="text-lg font-bold">Bake time and temperature</h2>
       <div class="mt-2 grid grid-cols-2 gap-3">
         <div>
-          <label class="text-xs font-semibold uppercase tracking-wide text-muted" for="mins">Recipe bake time (min)</label>
+          <div class="flex h-8 items-center"><label class="text-xs font-semibold uppercase tracking-wide text-muted" for="mins">Recipe bake time (min)</label></div>
           <input id="mins" type="text" inputmode="numeric" placeholder="30" autocomplete="off" class={`${field} font-mono tabular-nums`} />
         </div>
         <div>
-          <label class="text-xs font-semibold uppercase tracking-wide text-muted" for="temp">Oven <span data-temp-unit>(&deg;F)</span></label>
+          <div class="flex h-8 items-center justify-between gap-2">
+            <label class="text-xs font-semibold uppercase tracking-wide text-muted" for="temp">Oven</label>
+            <div role="group" aria-label="Oven temperature unit" class="inline-flex rounded-lg border border-line p-0.5">
+              <button type="button" data-temp-btn="F" aria-pressed="true" class="h-7 min-w-9 rounded-md px-2 text-xs font-semibold aria-pressed:bg-brand aria-pressed:text-white">&deg;F</button>
+              <button type="button" data-temp-btn="C" aria-pressed="false" class="h-7 min-w-9 rounded-md px-2 text-xs font-semibold aria-pressed:bg-brand aria-pressed:text-white">&deg;C</button>
+            </div>
+          </div>
           <input id="temp" type="text" inputmode="numeric" placeholder="350" autocomplete="off" class={`${field} font-mono tabular-nums`} />
         </div>
       </div>
@@ -56,9 +65,11 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
     <div>
       <h2 class="text-lg font-bold">Scale your ingredients</h2>
       <label class="mt-2 block text-xs font-semibold uppercase tracking-wide text-muted" for="recipe">Paste the ingredient list, one per line</label>
-      <textarea id="recipe" rows="6" placeholder={'1 1/2 cups flour\n3/4 cup sugar\n2 large eggs\n1 tsp baking powder'}
-        class="mt-1 block w-full resize-y rounded-xl border border-line bg-paper p-3 font-mono text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"></textarea>
-      <ul id="scaled" class="mt-3 space-y-1 font-mono text-base"></ul>
+      <textarea id="recipe" rows="7" placeholder={'1 1/2 cups flour\n3/4 cup sugar\n2 large eggs\n1 tsp baking powder'}
+        class="mt-1 block max-h-[28rem] min-h-40 w-full resize-y [field-sizing:content] rounded-xl border border-line bg-paper p-3 font-mono text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"></textarea>
+      <button type="button" id="example" class="mt-2 text-sm font-medium text-brand-ink underline underline-offset-4">Try an example</button>
+      <h3 id="scaled-h" class="mt-4 hidden text-sm font-semibold uppercase tracking-wide text-muted">Scaled for your pan</h3>
+      <ul id="scaled" class="mt-2 space-y-1 font-mono text-base"></ul>
     </div>
   </div>
 
@@ -70,137 +81,159 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
   </div>
 </section>
 
+
+<div id="bar" class="fixed inset-x-0 bottom-0 z-20 hidden border-t border-line bg-card/95 px-4 py-2 backdrop-blur md:hidden">
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-3">
+    <p class="text-sm text-muted">Multiply by <span id="bar-scale" class="ml-1 font-mono text-2xl font-extrabold tabular-nums text-brand-ink"></span></p>
+    <div class="flex gap-2">
+      <button type="button" id="bar-jump" class="inline-flex h-11 items-center rounded-xl border border-line px-3 text-sm font-semibold">See result</button>
+      <button type="button" id="bar-copy" class="inline-flex h-11 items-center rounded-xl bg-brand px-3 text-sm font-bold text-white">Copy</button>
+    </div>
+  </div>
+</div>
+
 <script>
   import {
-    SHAPES, PRESETS, defaultPan, panArea, panVolume, panValid, panName, convert, bakeGuide,
-    scaleRecipe, fmtNum, dec, toQuery,
+    SHAPES, PRESETS, IN_TO_CM, RECIPE_URL_LIMIT, LIMITS, defaultPan, panName, panProblem, convert, bakeGuide,
+    scaleRecipe, fmtNum, dec, toQuery, bundtRadius, parseSize, describeScale, areaText, volumeText,
   } from '../lib/calc.js';
 
   type Pan = { shape: string; a: number; b: number; depth: number; count: number };
-  const $ = (id: string) => document.getElementById(id) as HTMLElement;
-  const inp = (id: string) => document.getElementById(id) as HTMLInputElement;
+  type State = { A: Pan; B: Pan; unit: 'in' | 'cm'; tempUnit: 'F' | 'C'; temp: number; minutes: number; recipe: string };
+  const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+  const NS = 'http://www.w3.org/2000/svg';
+  const EXAMPLE = '1 1/2 cups all-purpose flour\n1 cup sugar\n1/2 cup (1 stick) butter\n2 large eggs\n1 (8 oz) package cream cheese\n1 tsp vanilla';
 
-  const state: { A: Pan; B: Pan; unit: 'in' | 'cm'; temp: number; minutes: number; recipe: string } = {
-    A: defaultPan('round'), B: { ...defaultPan('round'), a: 9 }, unit: 'in', temp: 0, minutes: 0, recipe: '',
-  };
+  // Sizes live in state in inches at full precision. The boxes are written from state and only read when typed in.
+  const state: State = { A: defaultPan('round'), B: { ...defaultPan('round'), a: 9 }, unit: 'in', tempUnit: 'F', temp: 0, minutes: 0, recipe: '' };
 
-  const toUnit = (inches: number) => (state.unit === 'cm' ? inches * 2.54 : inches);
-  const fromUnit = (v: number) => (state.unit === 'cm' ? v / 2.54 : v);
+  const toUnit = (inches: number) => (state.unit === 'cm' ? inches * IN_TO_CM : inches);
+  const fromUnit = (v: number) => (state.unit === 'cm' ? v / IN_TO_CM : v);
   const shown = (inches: number) => fmtNum(toUnit(inches), state.unit === 'cm' ? 1 : 2);
-  const num = (s: string) => parseFloat(s.replace(',', '.'));
+  const presetsFor = (shape: string): any[] => (PRESETS as any)[state.unit][shape];
+  const link = () => `${location.origin}${location.pathname}#${toQuery(state)}`;
+  const mk = (tag: string, attrs: Record<string, string | number>) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, String(attrs[k]));
+    return e;
+  };
+  const key = (id: 'a' | 'b') => (id === 'a' ? 'A' : 'B') as 'A' | 'B';
 
-  function presetsFor(shape: string): any[] {
-    const list = (PRESETS as any)[state.unit][shape];
-    return list;
+  // Select the preset that matches the pan, or "Custom size".
+  function syncPreset(id: 'a' | 'b') {
+    const p = state[key(id)];
+    const i = presetsFor(p.shape).findIndex((o) => Math.abs(o[1] - p.a) < 0.01 && Math.abs((o[2] || 0) - (p.b || 0)) < 0.01);
+    el<HTMLSelectElement>(`${id}-preset`).value = i >= 0 ? String(i) : 'custom';
   }
 
   function renderPan(id: 'a' | 'b') {
-    const p = state[id.toUpperCase() as 'A' | 'B'];
+    const p = state[key(id)];
     const shape = (SHAPES as any)[p.shape];
-    (inp(`${id}-shape`) as unknown as HTMLSelectElement).value = p.shape;
-    const sel = inp(`${id}-preset`) as unknown as HTMLSelectElement;
+    el<HTMLSelectElement>(`${id}-shape`).value = p.shape;
+    const sel = el<HTMLSelectElement>(`${id}-preset`);
     sel.innerHTML = '';
-    const opts = presetsFor(p.shape);
-    let match = -1;
-    opts.forEach((o, i) => {
+    for (const [i, o] of presetsFor(p.shape).entries()) {
       const op = document.createElement('option');
       op.value = String(i); op.textContent = o[0];
       sel.appendChild(op);
-      if (Math.abs(o[1] - p.a) < 1e-6 && Math.abs((o[2] || 0) - (p.b || 0)) < 1e-6) match = i;
-    });
+    }
     const custom = document.createElement('option');
     custom.value = 'custom'; custom.textContent = 'Custom size';
     sel.appendChild(custom);
-    sel.value = match >= 0 ? String(match) : 'custom';
+    syncPreset(id);
     const two = shape.dims.length === 2;
     const bundt = p.shape === 'bundt';
-    $(`${id}-a-l`).textContent = bundt ? shape.dims[0] : `${shape.dims[0]} (${state.unit})`;
-    $(`${id}-b-l`).textContent = `${shape.dims[1] || ''} (${state.unit})`;
-    $(`${id}-b-wrap`).style.display = two ? '' : 'none';
-    $(`${id}-d-wrap`).style.display = bundt ? 'none' : '';
-    inp(`${id}-a`).value = bundt ? fmtNum(p.a, 1) : shown(p.a);
-    if (two) inp(`${id}-b`).value = shown(p.b);
-    inp(`${id}-d`).value = shown(p.depth);
-    inp(`${id}-n`).value = String(p.count);
+    el(`${id}-a-l`).textContent = bundt ? shape.dims[0] : `${shape.dims[0]} (${state.unit})`;
+    el(`${id}-b-l`).textContent = `${shape.dims[1] || ''} (${state.unit})`;
+    el(`${id}-b-wrap`).style.display = two ? '' : 'none';
+    el(`${id}-d-wrap`).style.display = bundt ? 'none' : '';
+    el<HTMLInputElement>(`${id}-a`).value = bundt ? fmtNum(p.a, 1) : shown(p.a);
+    if (two) el<HTMLInputElement>(`${id}-b`).value = shown(p.b);
+    el<HTMLInputElement>(`${id}-d`).value = shown(p.depth);
+    el<HTMLInputElement>(`${id}-n`).value = String(p.count);
     document.querySelectorAll(`[data-pan="${id}"] [data-unit]`).forEach((e) => (e.textContent = `(${state.unit})`));
   }
 
-  function readPan(id: 'a' | 'b') {
-    const key = id.toUpperCase() as 'A' | 'B';
-    const p = state[key];
-    const bundt = p.shape === 'bundt';
-    const a = num(inp(`${id}-a`).value);
-    p.a = bundt ? a : fromUnit(a);
-    if (SHAPES[p.shape as keyof typeof SHAPES].dims.length === 2) p.b = fromUnit(num(inp(`${id}-b`).value));
-    if (!bundt) p.depth = fromUnit(num(inp(`${id}-d`).value));
-    p.count = Math.round(num(inp(`${id}-n`).value));
+  // Read one box that the person typed in. Other boxes keep the exact stored values.
+  function readField(id: 'a' | 'b', f: string) {
+    const p = state[key(id)];
+    const v = parseSize(el<HTMLInputElement>(`${id}-${f}`).value);
+    if (f === 'a') p.a = p.shape === 'bundt' ? v : fromUnit(v);
+    else if (f === 'b') p.b = fromUnit(v);
+    else if (f === 'd') p.depth = fromUnit(v);
+    else p.count = v;
   }
 
-  function drawPan(p: Pan, cx: number, ppi: number, cy: number) {
-    const NS = 'http://www.w3.org/2000/svg';
-    const g = document.createElementNS(NS, 'g');
-    g.setAttribute('class', 'text-brand-ink');
-    const mk = (tag: string, attrs: Record<string, string | number>) => {
-      const e = document.createElementNS(NS, tag);
-      for (const k in attrs) e.setAttribute(k, String(attrs[k]));
-      return e;
-    };
-    const style = { fill: 'currentColor', 'fill-opacity': 0.14, stroke: 'currentColor', 'stroke-width': 2.5 };
-    if (p.shape === 'round') g.appendChild(mk('circle', { cx, cy, r: (p.a / 2) * ppi, ...style }));
-    else if (p.shape === 'bundt') {
-      const R = Math.sqrt(panArea(p) / (Math.PI * 0.8));
-      g.appendChild(mk('circle', { cx, cy, r: R * ppi, ...style }));
-      g.appendChild(mk('circle', { cx, cy, r: R * 0.3 * ppi, fill: 'var(--brand-soft)', stroke: 'currentColor', 'stroke-width': 2 }));
-    } else {
-      const [w, l] = p.shape === 'square' ? [p.a, p.a] : [Math.max(p.a, p.b), Math.min(p.a, p.b)];
-      const rx = p.shape === 'loaf' ? 6 : 4;
-      g.appendChild(mk('rect', { x: cx - (w * ppi) / 2, y: cy - (l * ppi) / 2, width: w * ppi, height: l * ppi, rx, ...style }));
-    }
-    return g;
-  }
-  function extent(p: Pan) {
+  function panGeometry(p: Pan): [number, number] {
     if (p.shape === 'round') return [p.a, p.a];
-    if (p.shape === 'bundt') { const d = 2 * Math.sqrt(panArea(p) / (Math.PI * 0.8)); return [d, d]; }
+    if (p.shape === 'bundt') { const d = 2 * bundtRadius(p); return [d, d]; }
     if (p.shape === 'square') return [p.a, p.a];
     return [Math.max(p.a, p.b), Math.min(p.a, p.b)];
   }
 
+  function drawPan(p: Pan, cx: number, cy: number, ppi: number) {
+    const g = mk('g', { class: 'text-brand-ink' });
+    const style = { fill: 'currentColor', 'fill-opacity': 0.14, stroke: 'currentColor', 'stroke-width': 2.5 };
+    const [w, l] = panGeometry(p);
+    if (p.shape === 'round') g.appendChild(mk('circle', { cx, cy, r: (w / 2) * ppi, ...style }));
+    else if (p.shape === 'bundt') {
+      g.appendChild(mk('circle', { cx, cy, r: (w / 2) * ppi, ...style }));
+      g.appendChild(mk('circle', { cx, cy, r: 0.3 * (w / 2) * ppi, fill: 'var(--brand-soft)', stroke: 'currentColor', 'stroke-width': 2 }));
+    } else {
+      g.appendChild(mk('rect', { x: cx - (w * ppi) / 2, y: cy - (l * ppi) / 2, width: w * ppi, height: l * ppi, rx: p.shape === 'loaf' ? 6 : 4, ...style }));
+    }
+    return g;
+  }
+
   function drawing() {
-    const svg = $('draw');
+    const svg = el('draw');
     svg.innerHTML = '';
-    const [aw, ah] = extent(state.A), [bw, bh] = extent(state.B);
+    const [aw, ah] = panGeometry(state.A), [bw, bh] = panGeometry(state.B);
     const ppi = Math.min(170 / Math.max(aw, bw), 140 / Math.max(ah, bh));
-    const NS = 'http://www.w3.org/2000/svg';
-    [[state.A, 110, 'Recipe pan'], [state.B, 330, 'Your pan']].forEach(([p, cx, cap]) => {
-      svg.appendChild(drawPan(p as Pan, cx as number, ppi, 85));
-      const t = document.createElementNS(NS, 'text');
-      t.setAttribute('x', String(cx)); t.setAttribute('y', '176'); t.setAttribute('text-anchor', 'middle');
-      t.setAttribute('fill', 'currentColor'); t.setAttribute('font-size', '13'); t.setAttribute('font-weight', '600');
-      t.textContent = panName(p as Pan, state.unit);
-      const t2 = document.createElementNS(NS, 'text');
-      t2.setAttribute('x', String(cx)); t2.setAttribute('y', '195'); t2.setAttribute('text-anchor', 'middle');
-      t2.setAttribute('fill', 'currentColor'); t2.setAttribute('fill-opacity', '0.65'); t2.setAttribute('font-size', '12');
-      t2.textContent = cap as string;
+    const sides: [Pan, number, string][] = [[state.A, 110, 'Recipe pan'], [state.B, 330, 'Your pan']];
+    for (const [p, cx, cap] of sides) {
+      // Several pans are drawn as a short stack, up to three.
+      const n = Math.min(p.count, 3);
+      for (let i = n - 1; i >= 0; i--) svg.appendChild(drawPan(p, cx + (i - (n - 1) / 2) * 8, 85 - (i - (n - 1) / 2) * 8, ppi));
+      const t = mk('text', { x: cx, y: 176, 'text-anchor': 'middle', fill: 'currentColor', 'font-size': 15, 'font-weight': 600 });
+      t.textContent = panName(p, state.unit, false);
+      const t2 = mk('text', { x: cx, y: 197, 'text-anchor': 'middle', fill: 'currentColor', 'fill-opacity': 0.7, 'font-size': 13 });
+      t2.textContent = p.count > 1 ? `${cap}, ${p.count} pans` : cap;
       svg.appendChild(t); svg.appendChild(t2);
-    });
-    (svg as any).style.color = 'var(--ink)';
-    ($('draw-cap')).textContent = 'Both pans are drawn to the same scale.' + (state.A.shape === 'bundt' || state.B.shape === 'bundt' ? ' Bundt outlines are approximate.' : '');
+    }
+    svg.style.color = 'var(--ink)';
+    svg.setAttribute('aria-label', `Recipe pan: ${panName(state.A, state.unit)}. Your pan: ${panName(state.B, state.unit)}. Both drawn to the same scale.`);
+    el('draw-cap').textContent = 'Both pans are drawn to the same scale.' + (state.A.count > 1 || state.B.count > 1 ? ' Several pans are shown as a stack.' : '') + (state.A.shape === 'bundt' || state.B.shape === 'bundt' ? ' Bundt outlines are approximate.' : '');
+  }
+
+  // Name the problem so the person knows which box to fix.
+  function problems(): string[] {
+    const out: string[] = [];
+    for (const [which, p] of [['the recipe pan', state.A], ['your pan', state.B]] as [string, Pan][]) {
+      const bad = panProblem(p);
+      if (bad === 'size') out.push(`Check the size of ${which}. Use a number such as 8 or 8 1/2, and not more than ${LIMITS.size} ${state.unit === 'cm' ? 'cm' : 'inches'}.`);
+      if (bad === 'depth') out.push(`Enter a depth for ${which}.`);
+      if (bad === 'count') out.push(`Number of pans for ${which} must be a whole number from 1 to ${LIMITS.count}.`);
+    }
+    return out;
   }
 
   let lastText = '';
-  function update(fromTyping = true) {
-    readPan('a'); readPan('b');
-    state.minutes = Math.round(num(inp('mins').value)) || 0;
-    state.temp = Math.round(num(inp('temp').value)) || 0;
-    state.recipe = (inp('recipe') as unknown as HTMLTextAreaElement).value;
+  let valid = false;
+  function update() {
+    state.minutes = Math.round(parseSize(el<HTMLInputElement>('mins').value)) || 0;
+    state.temp = Math.round(parseSize(el<HTMLInputElement>('temp').value)) || 0;
+    state.recipe = el<HTMLTextAreaElement>('recipe').value;
 
-    const msg = $('msg'), result = $('result');
-    const okA = panValid(state.A), okB = panValid(state.B);
-    if (!okA || !okB) {
-      const which = !okA && !okB ? 'both pans' : !okA ? 'the recipe pan' : 'your pan';
-      msg.textContent = `Enter a size for ${which} to see the answer. Use numbers only, for example 8 or 9.5.`;
+    const msg = el('msg'), result = el('result');
+    const bad = problems();
+    valid = bad.length === 0;
+    syncBar();
+    if (!valid) {
+      msg.textContent = bad.join(' ');
       msg.classList.remove('hidden');
       result.style.opacity = '0.35';
+      el('scale').textContent = '–';
       lastText = '';
       syncUrl();
       return;
@@ -209,27 +242,28 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
     result.style.opacity = '';
 
     const r = convert(state.A, state.B);
-    $('scale').textContent = `${r.scale.toFixed(2)}×`;
-    const pct = Math.round(Math.abs(r.scale - 1) * 100);
-    $('scale-text').textContent =
-      pct === 0 ? 'Both pans hold the same amount of batter. Use the recipe as it is.'
-      : r.scale > 1 ? `Your pan holds ${pct}% more batter. Make ${pct}% more than the recipe.`
-      : `Your pan holds ${pct}% less batter. Make ${pct}% less than the recipe.`;
-    const sq = state.unit === 'cm' ? 6.4516 : 1, sqU = state.unit === 'cm' ? 'cm²' : 'sq in';
-    const cu = state.unit === 'cm' ? 16.387 : 1;
-    const volTxt = (cuIn: number) => state.unit === 'cm'
-      ? `${fmtNum(cuIn * cu / 1000, 2)} L` : `${fmtNum(cuIn / 14.4375, 1)} cups`;
-    $('area-a').textContent = `${fmtNum(r.areaA * sq, 1)} ${sqU}`;
-    $('area-b').textContent = `${fmtNum(r.areaB * sq, 1)} ${sqU}`;
-    $('vol-a').textContent = volTxt(r.volA);
-    $('vol-b').textContent = volTxt(r.volB);
+    const scaleTxt = `${r.scale.toFixed(2)}×`;
+    el('scale').textContent = scaleTxt;
+    el('bar-scale').textContent = scaleTxt;
+    const scaleText = describeScale(r, state.A, state.B, state.unit);
+    el('scale-text').textContent = scaleText;
+    const note = el('depth-note');
+    const flat = state.A.shape !== 'bundt' && state.B.shape !== 'bundt';
+    const depthDiffers = flat && Math.abs(state.A.depth / state.B.depth - 1) > 0.15;
+    note.textContent = depthDiffers ? 'The two pans have different depths, so this compares volume. To compare by area only, set both depths to the same value.' : '';
+    note.classList.toggle('hidden', !depthDiffers);
+    const areaOf = (v: number, p: Pan) => (p.shape === 'bundt' ? 'n/a' : areaText(v, state.unit));
+    el('area-a').textContent = areaOf(r.areaA, state.A);
+    el('area-b').textContent = areaOf(r.areaB, state.B);
+    el('vol-a').textContent = volumeText(r.volA, state.unit);
+    el('vol-b').textContent = volumeText(r.volB, state.unit);
 
     drawing();
 
-    const g = bakeGuide(r, state.A, state.B, state.minutes, state.temp, state.unit);
-    const bake = $('bake');
+    const g = bakeGuide(r, state.A, state.B, state.minutes, state.temp, state.tempUnit);
+    const bake = el('bake');
     bake.innerHTML = '';
-    const tl = state.unit === 'cm' ? '°C' : '°F';
+    const tl = state.tempUnit === 'C' ? '°C' : '°F';
     const head = document.createElement('p');
     head.className = 'rounded-xl bg-brand-soft p-3 font-semibold';
     const parts = [];
@@ -237,45 +271,45 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
     if (g.range) parts.push(`start checking at ${g.range[0]} min, expect done by ${g.range[1]} min`);
     head.textContent = parts.length ? parts.join(', ') + '.' : 'Enter the recipe bake time and oven temperature for exact numbers.';
     bake.appendChild(head);
-    g.lines.forEach((t: string) => { const p = document.createElement('p'); p.className = 'text-muted'; p.textContent = t; bake.appendChild(p); });
+    for (const t of g.lines as string[]) { const p = document.createElement('p'); p.className = 'text-muted'; p.textContent = t; bake.appendChild(p); }
 
-    const ul = $('scaled');
+    const ul = el('scaled');
     ul.innerHTML = '';
-    const lines = scaleRecipe(state.recipe, r.scale);
-    const outLines: string[] = [];
-    lines.forEach((l: { text: string; note: string }) => {
-      if (!l.text) return;
+    const copyLines: string[] = [];
+    for (const l of scaleRecipe(state.recipe, r.scale) as { text: string; note: string }[]) {
+      if (!l.text) continue;
       const li = document.createElement('li');
       li.textContent = l.text;
-      outLines.push(l.text.trim());
+      copyLines.push(l.text.trim());
       if (l.note) {
         const n = document.createElement('div');
         n.className = 'font-sans text-sm text-muted';
         n.textContent = l.note;
         li.appendChild(n);
-        outLines.push('  (' + l.note + ')');
+        copyLines.push(`  (${l.note})`);
       }
       ul.appendChild(li);
-    });
+    }
+    el('scaled-h').classList.toggle('hidden', copyLines.length === 0);
 
     lastText = [
       `Cake pan conversion: ${panName(state.A, state.unit)} to ${panName(state.B, state.unit)}`,
-      `Multiply the recipe by ${r.scale.toFixed(2)}x. ${$('scale-text').textContent}`,
-      `Area: ${$('area-a').textContent} to ${$('area-b').textContent}. Volume: ${$('vol-a').textContent} to ${$('vol-b').textContent}.`,
+      `Multiply the recipe by ${r.scale.toFixed(2)}x. ${scaleText}`,
+      `Area: ${el('area-a').textContent} to ${el('area-b').textContent}. Capacity: ${el('vol-a').textContent} to ${el('vol-b').textContent}.`,
       head.textContent || '',
       ...g.lines,
-      ...(outLines.length ? ['', 'Scaled ingredients:', ...outLines] : []),
-      '', `${location.origin}${location.pathname}#${toQuery(state as any)}`,
+      ...(copyLines.length ? ['', 'Scaled ingredients:', ...copyLines] : []),
+      '', link(),
     ].join('\n');
     syncUrl();
   }
 
   function syncUrl() {
-    try { history.replaceState(null, '', `${location.pathname}#${toQuery(state as any)}`); } catch { /* ignore */ }
+    try { history.replaceState(null, '', `${location.pathname}#${toQuery(state)}`); } catch { /* ignore */ }
   }
 
   function flash(text: string) {
-    const s = $('copy-status');
+    const s = el('copy-status');
     s.textContent = text;
     setTimeout(() => { if (s.textContent === text) s.textContent = ''; }, 2500);
   }
@@ -288,59 +322,77 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-line bg-paper px-
       t.remove();
     }
   }
+  const copyResult = () => (lastText ? copy(lastText, 'Result copied.') : flash('Enter both pan sizes first.'));
 
   function setUnit(u: 'in' | 'cm') {
     state.unit = u;
     document.querySelectorAll<HTMLElement>('[data-unit-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.unitBtn === u)));
-    document.querySelectorAll('[data-temp-unit]').forEach((e) => (e.innerHTML = u === 'cm' ? '(&deg;C)' : '(&deg;F)'));
-    inp('temp').placeholder = u === 'cm' ? '175' : '350';
     renderPan('a'); renderPan('b');
+  }
+  function setTempUnit(u: 'F' | 'C') {
+    state.tempUnit = u;
+    document.querySelectorAll<HTMLElement>('[data-temp-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tempBtn === u)));
+    el<HTMLInputElement>('temp').placeholder = u === 'C' ? '175' : '350';
   }
 
   function wire(id: 'a' | 'b') {
-    const key = id.toUpperCase() as 'A' | 'B';
-    inp(`${id}-shape`).addEventListener('change', (e) => {
+    const k = key(id);
+    el(`${id}-shape`).addEventListener('change', (e) => {
       const shape = (e.target as HTMLSelectElement).value;
-      const keepCount = state[key].count;
-      state[key] = { ...defaultPan(shape), count: keepCount };
-      if (state.unit === 'cm' && shape !== 'bundt') {
-        const p = presetsFor(shape)[0]; state[key].a = p[1]; state[key].b = p[2] || 0;
-      }
+      state[k] = { ...defaultPan(shape, state.unit), count: state[k].count };
       renderPan(id); update();
     });
-    inp(`${id}-preset`).addEventListener('change', (e) => {
+    el(`${id}-preset`).addEventListener('change', (e) => {
       const v = (e.target as HTMLSelectElement).value;
       if (v === 'custom') return;
-      const o = presetsFor(state[key].shape)[+v];
-      state[key].a = o[1]; state[key].b = o[2] || 0;
+      const o = presetsFor(state[k].shape)[+v];
+      state[k].a = o[1]; state[k].b = o[2] || 0;
       renderPan(id); update();
     });
-    ['a', 'b', 'd', 'n'].forEach((f) => inp(`${id}-${f}`).addEventListener('input', () => {
-      update();
-      // keep the preset menu honest while typing
-      const sel = inp(`${id}-preset`) as unknown as HTMLSelectElement;
-      const p = state[key];
-      const i = presetsFor(p.shape).findIndex((o: any) => Math.abs(o[1] - p.a) < 0.01 && Math.abs((o[2] || 0) - (p.b || 0)) < 0.01);
-      sel.value = i >= 0 ? String(i) : 'custom';
-    }));
+    for (const f of ['a', 'b', 'd', 'n']) {
+      el(`${id}-${f}`).addEventListener('input', () => { readField(id, f); syncPreset(id); update(); });
+    }
   }
 
+  // Load pans and settings from the address after the # sign.
+  function loadHash(): boolean {
+    const q = new URLSearchParams(location.hash.slice(1));
+    const unit = q.get('u') === 'cm' ? 'cm' : 'in';
+    const a = dec(q.get('a'), unit), b = dec(q.get('b'), unit);
+    if (!a || !b) return false;
+    state.A = a; state.B = b;
+    el<HTMLInputElement>('mins').value = q.get('m') || '';
+    el<HTMLInputElement>('temp').value = q.get('t') || '';
+    el<HTMLTextAreaElement>('recipe').value = q.get('r') || '';
+    setTempUnit(q.get('tu') === 'c' ? 'C' : 'F');
+    setUnit(unit);
+    return true;
+  }
+
+  // Show the "Multiply by" bar on a phone while the answer is off screen.
+  const seen = { tool: false, result: false };
+  function syncBar() {
+    el('bar').classList.toggle('hidden', !(valid && seen.tool && !seen.result));
+  }
+  const watch = (id: string, name: 'tool' | 'result') => new IntersectionObserver((es) => { seen[name] = es[es.length - 1].isIntersecting; syncBar(); }).observe(el(id));
+
   // start
-  const q = new URLSearchParams(location.hash.slice(1));
-  const a = dec(q.get('a')), b = dec(q.get('b'));
-  if (a) state.A = a;
-  if (b) state.B = b;
-  if (q.get('u') === 'cm') state.unit = 'cm';
-  inp('mins').value = q.get('m') || '';
-  inp('temp').value = q.get('t') || '';
-  (inp('recipe') as unknown as HTMLTextAreaElement).value = q.get('r') || '';
-  document.querySelectorAll<HTMLElement>('[data-unit-btn]').forEach((btn) => btn.addEventListener('click', () => { setUnit(btn.dataset.unitBtn as 'in' | 'cm'); update(); }));
-  setUnit(state.unit);
+  if (!loadHash()) { setTempUnit('F'); setUnit('in'); }
   wire('a'); wire('b');
-  ['mins', 'temp', 'recipe'].forEach((id) => inp(id).addEventListener('input', () => update()));
-  $('swap').addEventListener('click', () => { [state.A, state.B] = [state.B, state.A]; renderPan('a'); renderPan('b'); update(); });
-  $('copy').addEventListener('click', () => lastText ? copy(lastText, 'Result copied.') : flash('Enter both pan sizes first.'));
-  $('copy-link').addEventListener('click', () => copy(`${location.origin}${location.pathname}#${toQuery(state as any)}`, 'Link copied.'));
-  $('print').addEventListener('click', () => window.print());
+  document.querySelectorAll<HTMLElement>('[data-unit-btn]').forEach((btn) => btn.addEventListener('click', () => { setUnit(btn.dataset.unitBtn as 'in' | 'cm'); update(); }));
+  document.querySelectorAll<HTMLElement>('[data-temp-btn]').forEach((btn) => btn.addEventListener('click', () => { setTempUnit(btn.dataset.tempBtn as 'F' | 'C'); update(); }));
+  for (const id of ['mins', 'temp', 'recipe']) el(id).addEventListener('input', update);
+  el('example').addEventListener('click', () => { el<HTMLTextAreaElement>('recipe').value = EXAMPLE; update(); });
+  el('swap').addEventListener('click', () => { [state.A, state.B] = [state.B, state.A]; renderPan('a'); renderPan('b'); update(); });
+  el('copy').addEventListener('click', copyResult);
+  el('bar-copy').addEventListener('click', copyResult);
+  el('bar-jump').addEventListener('click', () => el('result').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  el('copy-link').addEventListener('click', () => copy(link(), state.recipe.length > RECIPE_URL_LIMIT ? `Link copied. It holds the first ${RECIPE_URL_LIMIT} characters of the list.` : 'Link copied.'));
+  el('print').addEventListener('click', () => window.print());
+  // A pasted share link or the back button changes only the address. Load it when it differs from what is on screen.
+  window.addEventListener('hashchange', () => {
+    if (location.hash.slice(1) !== toQuery(state) && loadHash()) update();
+  });
+  watch('tool', 'tool'); watch('result', 'result');
   update();
 </script>

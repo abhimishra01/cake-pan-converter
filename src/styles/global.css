@@ -59,6 +59,6 @@ body { background: var(--paper); color: var(--ink); font-family: var(--font-sans
 .prose-site td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700; }
 
 @media print {
-  header, footer, #copy, #copy-link, #print, #swap, [data-unit-btn], article, section[aria-labelledby="faq-h"] { display: none !important; }
+  header, footer, #bar, #example, #copy, #copy-link, #print, #swap, [data-unit-btn], article, section[aria-labelledby="faq-h"] { display: none !important; }
   body { background: #fff; color: #000; }
 }
