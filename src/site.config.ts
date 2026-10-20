@@ -9,13 +9,14 @@ export default {
   tagline: 'Free recipe scaler',
   homeTitle: 'Cake Pan Converter: Scale Any Recipe to a New Pan',
   description:
-    'Free cake pan converter. Pick the recipe pan and your pan to get the scale factor, scaled ingredients, bake time and a to-scale drawing.',
+    '8 inch to 9 inch round is 1.27x. Convert any cake pan: round, square, 9x13, loaf, bundt. Get scaled ingredients and a bake time guide.',
   email: 'hello@cakepanconverter.com',
   ga4: '',
   adsense: '',
   brand: '#a3264f',
   locale: 'en-US',
   ogImage: '/og.png',
+  legalUpdated: 'October 20, 2026', // change only when the Privacy or Terms text changes
   category: 'LifestyleApplication',
   owner: 'Cake Pan Converter',
 };

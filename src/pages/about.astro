@@ -1,6 +1,7 @@
 ---
 import Page from '../layouts/Page.astro';
 import site from '../site.config.ts';
+import { url } from '../lib/paths.ts';
 ---
 <Page title="About" description={`About ${site.name}, a free tool that converts a cake recipe from one pan size to another.`}>
   <p>{site.name} converts a baking recipe from one pan to another. You enter the pan in the recipe and the pan you own. The tool gives you the scale factor, the scaled ingredient list, a bake time guide and a drawing of both pans to the same scale.</p>
@@ -10,5 +11,5 @@ import site from '../site.config.ts';
   <p>The tool compares the volume of the two pans. It multiplies your ingredients by that ratio and rounds them to amounts you can measure, such as 1 1/2 cups or 2 tablespoons. The bake time and temperature guide is a starting point. Ovens differ, so always test the cake.</p>
   <p>Everything runs in your browser. We do not ask you to create an account, and we do not store your recipe.</p>
   <h2>Contact</h2>
-  <p>Questions or ideas? Write to <a href={`mailto:${site.email}`}>{site.email}</a> or visit the <a href="/contact/">Contact page</a>.</p>
+  <p>Questions or ideas? Write to <a href={`mailto:${site.email}`}>{site.email}</a> or visit the <a href={url('/contact/')}>Contact page</a>.</p>
 </Page>

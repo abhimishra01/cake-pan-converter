@@ -6,11 +6,11 @@ export const faq = [
   },
   {
     q: 'What is the scale factor to go from an 8 inch to a 9 inch round pan?',
-    a: 'Multiply the recipe by 1.27. The 9 inch pan is 27% larger by area (63.6 square inches against 50.3). Round odd amounts to the nearest eighth of a cup.',
+    a: 'Multiply the recipe by 1.27. The 9 inch pan is 27% larger by area (63.6 square inches against 50.3). The tool rounds each amount to one you can measure, such as an eighth or a third of a cup.',
   },
   {
     q: 'Do I change the baking time when I change the pan?',
-    a: 'Yes, usually. Deeper batter bakes slower, and thinner batter bakes faster. Keep the oven at the same temperature for a thinner cake and start checking at about 70% of the time. For a deeper cake, lower the oven by 25°F and bake longer. Always test with a toothpick.',
+    a: 'Yes, usually. Deeper batter bakes slower, and thinner batter bakes faster. Keep the oven at the same temperature for a thinner cake and start checking early. For a deeper cake, lower the oven by 25°F and bake longer. Always test with a toothpick.',
   },
   {
     q: 'How full should I fill a cake pan?',

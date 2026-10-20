@@ -18,6 +18,8 @@ const jsonLd = [
     operatingSystem: 'Any',
     browserRequirements: 'Requires JavaScript',
     inLanguage: site.locale,
+    image: new URL(site.ogImage, base).href,
+    featureList: ['Scale factor between two pans', 'Scaled ingredient list with kitchen fractions', 'Bake time and temperature guide', 'To-scale drawing of both pans', 'Shareable link'],
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   },
   {
@@ -37,14 +39,8 @@ const jsonLd = [
     <h1 class="max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">
       {site.keyword.charAt(0).toUpperCase() + site.keyword.slice(1)}
     </h1>
-    <p class="mt-4 max-w-2xl text-lg text-muted">{site.description}</p>
+    <p class="mt-4 max-w-2xl text-lg text-muted">Pick the pan in your recipe and the pan you have. Get the scale factor, scaled ingredients and a bake time guide.</p>
     <div class="mt-8 min-h-[22rem]"><Tool /></div>
-    <p class="mt-6 text-sm text-muted">
-      <a href="/about/" class="underline underline-offset-4 hover:text-ink">About</a> &middot;
-      <a href="/privacy/" class="underline underline-offset-4 hover:text-ink">Privacy Policy</a> &middot;
-      <a href="/terms/" class="underline underline-offset-4 hover:text-ink">Terms</a> &middot;
-      <a href="/contact/" class="underline underline-offset-4 hover:text-ink">Contact</a>
-    </p>
   </section>
   <Article />
   <Faq />
