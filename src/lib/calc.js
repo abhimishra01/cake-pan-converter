@@ -8,7 +8,7 @@ export const CUIN_TO_ML = 16.387;
 export const BUNDT_DEPTH = 3; // effective depth used to compare a bundt pan with flat pans (inches)
 
 // Limits that keep typed input sane (inches, cups, pans).
-export const LIMITS = { size: 100, depth: 20, cups: 60, count: 24 };
+export const LIMITS = { size: 100, depth: 20, cups: 60, count: 24, minSize: 0.5, minDepth: 0.25, minCups: 1 };
 
 // Bundt depth is only used to compare a bundt pan's area with flat pans; its volume comes from cups.
 export const SHAPES = {
@@ -74,11 +74,11 @@ export function panVolume(p) {
 // First problem with a pan, or '' when it is fine. Returns 'size', 'depth' or 'count' so the page can name the field.
 export function panProblem(p) {
   if (!hasShape(p.shape)) return 'size';
-  const ok = (x, max) => Number.isFinite(x) && x > 0 && x <= max;
+  const ok = (x, min, max) => Number.isFinite(x) && x >= min && x <= max;
   const bundt = p.shape === 'bundt';
   const two = SHAPES[p.shape].dims.length === 2;
-  if (!ok(p.a, bundt ? LIMITS.cups : LIMITS.size) || (two && !ok(p.b, LIMITS.size))) return 'size';
-  if (!bundt && !ok(p.depth, LIMITS.depth)) return 'depth';
+  if (!(bundt ? ok(p.a, LIMITS.minCups, LIMITS.cups) : ok(p.a, LIMITS.minSize, LIMITS.size)) || (two && !ok(p.b, LIMITS.minSize, LIMITS.size))) return 'size';
+  if (!bundt && !ok(p.depth, LIMITS.minDepth, LIMITS.depth)) return 'depth';
   if (!Number.isInteger(p.count) || p.count < 1 || p.count > LIMITS.count) return 'count';
   return '';
 }
@@ -265,7 +265,7 @@ export function niceFraction(v, table = cupTable()) {
 }
 
 const FR = '½¼¾⅓⅔⅛⅜⅝⅞';
-const NUM = String.raw`(?:\d+-\d+\/\d+|\d+\s*[${FR}]|\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?|\.\d+|[${FR}])`;
+const NUM = String.raw`(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+,\d{1,2}(?!\d)|\d+-\d+\/\d+|\d+\s*[${FR}]|\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?|\.\d+|[${FR}])`;
 const RANGE = String.raw`(?:\s*(?:-|–|to)\s*(${NUM}))?`;
 const UNIT = String.raw`(?:cups?|c|tablespoons?|tbsp|tbs|tbl|teaspoons?|tsp|grams?|g|kg|ounces?|oz|pounds?|lbs?|lb|ml|milliliters?|millilitres?|l|liters?|litres?|sticks?|pinch(?:es)?)`;
 const INNER_UNIT = String.raw`(?:cups?|tablespoons?|tbsp|tbs|teaspoons?|tsp|g|grams?|kg|ml|milliliters?|millilitres?|oz|ounces?|lbs?|pounds?|l|liters?|litres?|sticks?)`;
@@ -280,10 +280,13 @@ const CONTAINER_RE = /^\s*(?:\([^)]*\)\s*)?(?:cans?|packages?|pkgs?|jars?|box(?:
 export function parseNum(s) {
   s = s.trim();
   let m;
+  // "1,200" has a thousands comma. "1,5" is a decimal comma.
+  if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) return parseFloat(s.replace(/,/g, ''));
+  if (/^\d+,\d{1,2}$/.test(s)) return parseFloat(s.replace(',', '.'));
   if ((m = s.match(/^(\d+)\s*([½¼¾⅓⅔⅛⅜⅝⅞])$/))) return +m[1] + UNICODE_FRACTIONS[m[2]];
   if (UNICODE_FRACTIONS[s] !== undefined) return UNICODE_FRACTIONS[s];
-  if ((m = s.match(/^(\d+)[\s-]+(\d+)\/(\d+)$/))) return +m[1] + m[2] / m[3];
-  if ((m = s.match(/^(\d+)\/(\d+)$/))) return m[1] / m[2];
+  if ((m = s.match(/^(\d+)[\s-]+(\d+)\/(\d+)$/))) return +m[3] ? +m[1] + m[2] / m[3] : NaN;
+  if ((m = s.match(/^(\d+)\/(\d+)$/))) return +m[2] ? m[1] / m[2] : NaN;
   return parseFloat(s);
 }
 
@@ -345,6 +348,7 @@ function scaleInner(text, s) {
   return text.replace(INNER_RE, (m, n1, n2, sp, u) => {
     const kind = unitKind(u);
     const v1 = parseNum(n1) * s;
+    if (!Number.isFinite(v1) || (n2 && !Number.isFinite(parseNum(n2)))) return m;
     return n2 ? rangeText(v1, parseNum(n2) * s, kind) : formatAmount(v1, kind);
   });
 }
@@ -387,6 +391,7 @@ export function scaleLine(line, s) {
   if (!kind && NOT_AN_AMOUNT_RE.test(rest)) return { text: line, note: '' };
   const v1 = parseNum(n1) * s;
   const v2 = n2 ? parseNum(n2) * s : null;
+  if (!Number.isFinite(v1) || (v2 !== null && !Number.isFinite(v2))) return { text: line, note: 'Check this line. The amount could not be read.' };
   let note = '';
   let qty;
   let keep = ''; // text in front of the rest that must not be scaled again

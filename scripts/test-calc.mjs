@@ -236,3 +236,14 @@ test('ready-made pages: text matches the calculator', async () => {
     near(c.convert(c.dec(q.get('a')), c.dec(q.get('b'))).scale, c.convert(A, B).scale, 0.0001);
   }
 });
+
+test('QA: tiny sizes, comma amounts and zero denominators', () => {
+  assert.equal(c.panProblem(R(0.0001)), 'size');
+  assert.equal(c.panProblem(R(8, 0.01)), 'depth');
+  assert.equal(c.panProblem(R(0.5)), '');
+  assert.equal(s('1,200 g flour', 1.5), '1800 g flour');
+  assert.equal(s('1,5 cups milk', 2), '3 cups milk');
+  assert.equal(s('1/0 cup sugar', 2), '1/0 cup sugar');
+  assert.ok(c.scaleLine('1/0 cup sugar', 2).note);
+  assert.ok(!/Infinity|NaN/.test(s('2 cups flour, 1/0 tsp salt', 2)));
+});
