@@ -14,5 +14,5 @@ import { url } from '../lib/paths.ts';
   <p>We check the code against known answers. An 8 inch round to a 9 inch round is 1.27. A 9x13 pan covers 117 square inches. Two 8 inch rounds hold 86% of a 9x13. Automated tests run these checks every time the site changes.</p>
   <p>Everything runs in your browser. We do not ask you to create an account, and we do not store your recipe.</p>
   <h2>Contact</h2>
-  <p>Questions or ideas? Write to <a href={`mailto:${site.email}`}>{site.email}</a> or visit the <a href={url('/contact/')}>Contact page</a>.</p>
+  <p>Questions or ideas? Write to <a href={site.contactHref}>{site.contactLabel}</a> or visit the <a href={url('/contact/')}>Contact page</a>.</p>
 </Page>

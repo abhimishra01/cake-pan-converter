@@ -1,6 +1,6 @@
 // ONE config file. Change values here; every page reads from it.
 // Keep this file plain (no type-only syntax): scripts/deploy.mjs imports it directly.
-export default {
+const cfg = {
   name: 'Cake Pan Converter',
   domain: 'cakepanconverter.com',
   cloudflareProject: 'cake-pan-converter',
@@ -20,4 +20,18 @@ export default {
   legalUpdated: 'October 20, 2026', // change only when the Privacy or Terms text changes
   category: 'LifestyleApplication',
   owner: 'Cake Pan Converter',
+};
+
+// Bingemind mode (SITE_MODE=bingemind): the tool lives at bingemind.com/cake-pan-converter/.
+// Canonical links always name that address. Legal pages name Bingemind as the owner.
+const bingemind = process.env.SITE_MODE === 'bingemind';
+export default {
+  ...cfg,
+  domain: 'bingemind.com/cake-pan-converter',
+  origin: 'https://bingemind.com/cake-pan-converter',
+  bingemind,
+  owner: bingemind ? 'Bingemind' : cfg.owner,
+  contactWord: bingemind ? 'Contact' : 'Email',
+  contactHref: bingemind ? 'https://bingemind.com/#contact' : `mailto:${cfg.email}`,
+  contactLabel: bingemind ? 'bingemind.com/#contact' : cfg.email,
 };

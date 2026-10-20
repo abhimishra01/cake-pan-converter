@@ -9,7 +9,7 @@ import { faq } from '../data/faq.ts';
 import { pairs } from '../data/pairs.ts';
 import { url } from '../lib/paths.ts';
 
-const base = `https://${site.domain}`;
+const base = site.origin;
 const jsonLd = [
   {
     '@context': 'https://schema.org',
@@ -21,7 +21,7 @@ const jsonLd = [
     operatingSystem: 'Any',
     browserRequirements: 'Requires JavaScript',
     inLanguage: site.locale,
-    image: new URL(site.ogImage, base).href,
+    image: `${base}${site.ogImage}`,
     featureList: ['Scale factor between two pans', 'Scaled ingredient list with kitchen fractions', 'Bake time and temperature guide', 'To-scale drawing of both pans', 'Shareable link'],
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   },

@@ -23,7 +23,7 @@ const guide = bakeGuide(r, A, B, 35, 350, 'F');
 const warn = fillWarning(B);
 const areaOf = (v: number, p: { shape: string }) => (p.shape === 'bundt' ? 'n/a' : areaText(v, 'in'));
 
-const base = `https://${site.domain}`;
+const base = site.origin;
 const jsonLd = [
   {
     '@context': 'https://schema.org', '@type': 'FAQPage',
