@@ -251,6 +251,11 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
   function update() {
     state.minutes = Math.round(parseSize(el<HTMLInputElement>('mins').value)) || 0;
     state.temp = Math.round(parseSize(el<HTMLInputElement>('temp').value)) || 0;
+    // A typed value outside a believable range is ignored, and the bake guide says so.
+    const bakeWarn: string[] = [];
+    const [tLo, tHi] = state.tempUnit === 'C' ? [65, 315] : [150, 600];
+    if (el<HTMLInputElement>('mins').value.trim() && (state.minutes < 1 || state.minutes > 600)) { state.minutes = 0; bakeWarn.push('Bake time must be from 1 to 600 minutes.'); }
+    if (el<HTMLInputElement>('temp').value.trim() && (state.temp < tLo || state.temp > tHi)) { state.temp = 0; bakeWarn.push(`Oven temperature must be from ${tLo} to ${tHi}°${state.tempUnit}.`); }
     state.recipe = el<HTMLTextAreaElement>('recipe').value;
 
     const msg = el('msg'), result = el('result');
@@ -263,6 +268,8 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
       result.style.opacity = '0.35';
       el('scale').textContent = '–';
       el('say-scale').textContent = '';
+      el('scale-text').textContent = '';
+      for (const id of ['area-a', 'area-b', 'vol-a', 'vol-b']) el(id).textContent = '';
       el('fill-warn').classList.add('hidden');
       lastText = '';
       syncUrl();
@@ -307,6 +314,7 @@ const field = 'mt-1 block h-12 w-full rounded-xl border border-edge bg-paper px-
     if (g.range) parts.push(`start checking at ${g.range[0]} min, expect done by ${g.range[1]} min`);
     head.textContent = parts.length ? parts.join(', ') + '.' : 'Enter the recipe bake time and oven temperature for exact numbers.';
     bake.appendChild(head);
+    for (const t of bakeWarn) { const p = document.createElement('p'); p.className = 'font-medium text-red-700 dark:text-red-400'; p.textContent = t; bake.appendChild(p); }
     for (const t of g.lines as string[]) { const p = document.createElement('p'); p.className = 'text-muted'; p.textContent = t; bake.appendChild(p); }
 
     const ul = el('scaled');

@@ -247,3 +247,7 @@ test('QA: tiny sizes, comma amounts and zero denominators', () => {
   assert.ok(c.scaleLine('1/0 cup sugar', 2).note);
   assert.ok(!/Infinity|NaN/.test(s('2 cups flour, 1/0 tsp salt', 2)));
 });
+
+test('QA: zero eggs stay zero', () => {
+  assert.equal(s('0 eggs', 1.27), '0 eggs');
+});

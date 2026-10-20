@@ -356,9 +356,9 @@ function scaleInner(text, s) {
 function scaleEggs(rest, v1, v2) {
   const tail = rest.match(EGG_RE)[1] || '';
   const part = /yolk|white/i.test(tail); // yolks and whites come in whole numbers
-  const snap = (v) => (part ? Math.max(1, Math.round(v)) : Math.max(0.5, Math.round(v * 2) / 2));
+  const snap = (v) => (v === 0 ? 0 : part ? Math.max(1, Math.round(v)) : Math.max(0.5, Math.round(v * 2) / 2));
   const q = snap(v1);
-  const plural = (v2 === null ? q : snap(v2)) > 1;
+  const plural = (v2 === null ? q : snap(v2)) > 1 || q === 0;
   const word = (w) => (plural ? `${w}s` : w);
   const noun = tail ? `egg${tail.replace(/(yolk|white)s?/i, (_, w) => word(w))}` : `egg${plural ? 's' : ''}`;
   let note = '';
