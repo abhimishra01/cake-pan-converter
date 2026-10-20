@@ -1,49 +1,41 @@
-# Microtool site template
+# Cake pan converter
 
-Astro (static) + Tailwind 4. One config file: `src/site.config.ts`. No backend.
+Converts a cake recipe from one pan to another. Live at https://cakepanconverter.com (domain not bought yet; until then the site is served from GitHub Pages at https://abhimishra01.github.io/cake-pan-converter/).
 
-## Make a new tool
+It compares the volume of two pans (round, square, rectangle, loaf, sheet, bundt or tube), gives the scale factor, scales a pasted ingredient list with kitchen fractions, gives a bake time and temperature guide, draws both pans to scale, and keeps the whole state in the page address so a link can be shared.
 
-```
-cd ~/Desktop/personal/microtools
-template/scripts/new-tool.sh my-tool mytool.com
-cd sites/my-tool && npm run dev
-```
+Stack: Astro (static) and Tailwind 4. No backend.
 
-Then edit, in this order:
-1. `src/site.config.ts`: name, main keyword, supporting keywords, description, email, brand colour.
-2. `src/components/Tool.astro`: the real tool (replace the demo; keep the fixed height so the page does not jump).
-3. `src/components/Article.astro`: about 600 words of plain text. Main keyword in the first paragraph and one heading.
-4. `src/data/faq.ts`: 5 to 8 real questions. They also become FAQ schema.
-5. Optional: `public/og.png` (1200x630) and set `ogImage: '/og.png'`.
-6. Check About, Terms and Privacy text still fit the tool.
+## Where things are
 
-Commands: `npm run dev` (work), `npm run build` (make `dist/`), `npm run preview` (check the build), `npm run deploy` (build and upload to Cloudflare Pages).
+- `src/lib/calc.js`: all the logic, with no browser code. Pan maths, validation, names, the bake guide, ingredient scaling, URL state. Tested by `npm test`.
+- `src/components/Tool.astro` and `PanForm.astro`: the tool UI. The script at the end of `Tool.astro` reads the boxes, calls `calc.js` and draws the result.
+- `src/components/Article.astro`, `src/data/faq.ts`: the text under the tool. The FAQ also becomes FAQPage schema.
+- `src/site.config.ts`: name, domain, brand color, description, the date shown on Privacy and Terms.
+- `src/lib/paths.ts`: `url()` for links that work on the domain root and under a sub path.
 
-## Go live (plain steps)
+## Commands
 
-1. **Buy the domain** after the tool works. `.com`, 1 year, auto-renew off. Put it in `site.config.ts` as `domain` (no `www`, no `https://`). Rebuild.
-2. **Cloudflare**: add the domain to Cloudflare (free plan) and change the nameservers at the registrar.
-3. **First deploy**: run `npx wrangler login` once (you do this, in your browser). Then `npm run deploy`. The first run asks to create the Pages project; use the same name as `cloudflareProject` in the config.
-4. **Custom domain**: Cloudflare dashboard > Workers & Pages > your project > Custom domains. Add `mytool.com` and `www.mytool.com`. Then add a redirect rule from `www` to the bare domain (or the reverse) so only one version exists.
-5. **No duplicate in Google**: `public/_headers` already sets `X-Robots-Tag: noindex` for the `*.pages.dev` address only. Check it: `curl -sI https://my-tool.pages.dev | grep -i robots` shows noindex; the custom domain does not.
-6. **Google Search Console**: add the domain property, verify with the DNS TXT record in Cloudflare, submit `https://mytool.com/sitemap-index.xml`, request indexing of the home page.
-7. **Bing Webmaster Tools**: sign in, import from Search Console.
-8. **Google Analytics**: create a GA4 property, copy the measurement ID (`G-...`) to `ga4` in the config, rebuild, deploy. Empty means off.
-9. **AdSense (later, about 10 visits a day or more)**: apply with the site. When approved, put the publisher ID (`ca-pub-...`) in `adsense`. The build then adds the script and writes `/ads.txt`. Set up the consent message in AdSense (Privacy & messaging) for EU/UK visitors. Then switch on Auto ads. A first rejection is normal; improve content and apply again.
-10. Share the tool on Reddit, Quora and social. Rankings take 4 to 6 months. Keep the domain at least a year.
+- `npm run dev`: work on the site.
+- `npm test`: unit tests for `calc.js` (`node --test`).
+- `npm run build`: build into `dist/`.
+- `npm run preview`: serve the build.
+- `npm run deploy`: run the tests, build, and upload to Cloudflare Pages (needs `npx wrangler login` once, done by the owner).
 
-## How things work
+## How the tool works
 
-- **Dark mode**: follows the system, the toggle saves the choice. A tiny inline script sets it before paint, so there is no flash.
-- **SEO**: title, description, canonical (real domain), Open Graph, Twitter, `WebApplication` and `FAQPage` JSON-LD are in `src/layouts/Base.astro` and `src/pages/index.astro`.
-- **Sitemap and robots**: `@astrojs/sitemap` makes `/sitemap-index.xml`; `/robots.txt` points to it. The 404 page is excluded.
-- **ads.txt**: generated from `adsense`. Empty ID gives a comment line only.
-- **Favicon**: `/favicon.svg` is made from the first letter of the name and the brand colour (`src/pages/favicon.svg.ts`). To use your own, put a file at `public/favicon.svg` and delete that `.ts` file. For Apple and old browsers add `public/apple-touch-icon.png` (180x180) and a `<link rel="apple-touch-icon">` line in `Base.astro`.
-- **GA4 and AdSense** load only when their IDs are set (`src/components/Analytics.astro`). These are the only outside requests.
-- **Fonts**: system font stack, no downloads.
-- **Deploy script**: `scripts/deploy.mjs` reads `cloudflareProject` and runs `wrangler pages deploy dist`. It needs Node 22.6 or newer.
+- Sizes are stored in inches at full precision. The boxes show inches or centimeters, and a box is read only when someone types in it, so switching units never changes a pan.
+- Bundt and tube pans are stored in cups and compared by volume (1 cup = 14.4375 cubic inches).
+- Scale factor = volume of your pan x pans, divided by volume of the recipe pan x pans.
+- Bake guide: the ratio of batter depth sets the rule (deeper: lower the oven and bake longer; thinner: bake sooner; bundt: one separate rule). The numbers are a rule of thumb, and the page says so.
+- Ingredient lines: every amount on the line is scaled (cups, spoons, sticks, grams, ounces). Cans and packages stay whole, and eggs keep a note for the half egg. A line the tool is unsure about gets a "Check this line" note. Lines such as "350 degrees" or "12 servings" are left alone.
+- Link format: `#a=<shape,size,size2,depth,count>&b=...&u=cm&tu=c&t=<oven>&m=<minutes>&r=<recipe, first 1500 characters>`. Sizes are in the unit in `u`.
+- Limits: sizes up to 100 (inches or cm), depth up to 20, bundt up to 60 cups, 1 to 24 pans.
 
-## Legal pages
+## GitHub Pages
 
-The About, Terms and Privacy pages are good starting text, not legal advice. Read them before you launch and edit what does not match your tool.
+`.github/workflows/pages.yml` runs on every push to `main`: install, test, build with `PAGES_BASE=/cake-pan-converter/` and `PAGES_SITE=https://abhimishra01.github.io`, then deploy. Canonical links always point to the real domain. To try a Pages build locally: `PAGES_BASE=/cake-pan-converter/ PAGES_SITE=https://abhimishra01.github.io npx astro build --outDir dist-pages`.
+
+## Going live on the real domain
+
+Follow the go-live steps in the microtools playbook (`~/Desktop/personal/microtools/PLAYBOOK.md`): buy the domain, add it to Cloudflare, `npm run deploy`, add Search Console, then GA4 and AdSense IDs in `src/site.config.ts`.
